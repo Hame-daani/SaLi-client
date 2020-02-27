@@ -4,14 +4,13 @@ from model import *
 from world import World
 import time
 from typing import *
-from core import PickHandler, TurnHandler
-
+from core.PickHandler import PickHandler
+from core.TurnHandler import TurnHandler
 
 class AI:
     def __init__(self):
-        self.rows = 0
-        self.cols = 0
-        self.path_for_my_units: List[Path] = None
+        self.pick_handler = PickHandler()
+        self.turn_handler = TurnHandler()
 
     def pick(self, world: World):
         """
@@ -19,8 +18,8 @@ class AI:
         """
         start_time = time.time()
         Logs.show_log("pick started!")
-        PickHandler.pick(self, world)
-        Logs.show_log(f"pick finished! time:{time.time()-start_time}")
+        self.pick_handler.pick(world)
+        Logs.show_log(f"pick finished! time:{time.time()-start_time:.3f}")
 
     def turn(self, world: World):
         """
@@ -28,9 +27,9 @@ class AI:
         """
         start_time = time.time()
         Logs.show_log(f"turn {world.get_current_turn()} started.")
-        TurnHandler.turn(self, world)
+        self.turn_handler.turn(world, self.pick_handler)
         Logs.show_log(
-            f"turn {world.get_current_turn()} finished. time: {time.time()-start_time}")
+            f"turn {world.get_current_turn()} finished. time: {time.time()-start_time:.3f}")
 
     def end(self, world: World, scores):
         """
@@ -39,4 +38,7 @@ class AI:
         scores is a map from int to int which the key is player_id and value is player_score
         """
         print("end started!")
-        print("My score:", scores[world.get_me().player_id])
+        my_id = world.get_me().player_id
+        my_friend_id = world.get_friend().player_id
+        print(
+            f"My ID: {my_id} My Friend: {my_friend_id} My score:{scores[my_id]}")
