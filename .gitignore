@@ -56,3 +56,4 @@ buildNumber.properties
 # vendor/
 *.pyc
 .vscode
+venv/
