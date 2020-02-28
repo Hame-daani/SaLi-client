@@ -7,10 +7,10 @@ from typing import *
 from core.PickHandler import PickHandler
 from core.TurnHandler import TurnHandler
 
+
 class AI:
     def __init__(self):
         self.pick_handler = PickHandler()
-        self.turn_handler = TurnHandler()
 
     def pick(self, world: World):
         """
@@ -19,7 +19,7 @@ class AI:
         start_time = time.time()
         Logs.show_log("pick started!")
         self.pick_handler.pick(world)
-        Logs.show_log(f"pick finished! time:{time.time()-start_time:.3f}")
+        Logs.show_log(f"pick finished! time:{time.time()-start_time:.4f}")
 
     def turn(self, world: World):
         """
@@ -27,9 +27,10 @@ class AI:
         """
         start_time = time.time()
         Logs.show_log(f"turn {world.get_current_turn()} started.")
-        self.turn_handler.turn(world, self.pick_handler)
+        self.turn_handler = TurnHandler(pick_handler=self.pick_handler)
+        self.turn_handler.turn(world)
         Logs.show_log(
-            f"turn {world.get_current_turn()} finished. time: {time.time()-start_time:.3f}")
+            f"turn {world.get_current_turn()} finished. time: {time.time()-start_time:.4f}")
 
     def end(self, world: World, scores):
         """

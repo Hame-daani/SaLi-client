@@ -24,4 +24,5 @@ class PickHandler:
         # picking the chosen hand - rest of the hand will automatically be filled with random base_units
         world.choose_hand(base_units=my_hand)
         # other pre process
-        self.path_for_my_units = world.get_friend().paths_from_player[0]
+        self.path_for_my_units = world.get_first_enemy().paths_from_player
+        self.path_for_my_units.append(world.get_second_enemy().paths_from_player)
