@@ -1,9 +1,9 @@
 import random
 
-from model import *
+from model import Logs
 from world import World
 import time
-from typing import *
+from typing import List
 from core.PickHandler import PickHandler
 from core.TurnHandler import TurnHandler
 

@@ -1,7 +1,7 @@
 import random
-from typing import *
+from typing import List
 
-from model import *
+from model import Path
 from world import World
 
 
@@ -25,4 +25,5 @@ class PickHandler:
         world.choose_hand(base_units=my_hand)
         # other pre process
         self.path_for_my_units = world.get_first_enemy().paths_from_player
-        self.path_for_my_units.append(world.get_second_enemy().paths_from_player)
+        self.path_for_my_units.append(
+            world.get_second_enemy().paths_from_player)
