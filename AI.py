@@ -9,6 +9,7 @@ from core.TurnHandler import TurnHandler
 
 
 # test pycharm
+#ok
 class AI:
     def __init__(self):
         self.pick_handler = PickHandler()
