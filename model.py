@@ -285,6 +285,11 @@ class Path:
                "path id : {} | " \
                "cells: {}>".format(self.id, ["({}, {})".format(cell.row, cell.col) for cell in self.cells])
 
+    def __repr__(self):
+        return "<Path | " \
+               "path id : {} | " \
+               "cells: {}>".format(self.id, ["({}, {})".format(cell.row, cell.col) for cell in self.cells])
+
     def __eq__(self, other):
         return self.id == other.id
 

@@ -35,24 +35,33 @@ class TurnHandler:
         """
         """
         path_for_my_units = self.choose_path(world)
-        Logs.show_log(f"path {path_for_my_units.id} chosen")
+        Logs.show_log(f"path {path_for_my_units} chosen")
         self.put_units(world, path_for_my_units)
 
     def choose_path(self, world: World) -> Path:
         """
         """
-        path_to_enemy = []
-        myself = world.get_me()
-        first_enemy_king_cell = world.get_first_enemy().king.center
-        path_to_first_enemy = world.get_shortest_path_to_cell(
-            from_player_id=myself.player_id, cell=first_enemy_king_cell)
-        path_to_enemy.append(path_to_first_enemy)
-        second_enemy_king_cell = world.get_second_enemy().king.center
-        path_to_second_enemy = world.get_shortest_path_to_cell(
-            from_player_id=myself.player_id, cell=second_enemy_king_cell)
-        path_to_enemy.append(path_to_second_enemy)
-        Logs.show_log(f"path 1 {path_to_enemy[0]} path 2 {path_to_enemy[1]}")
-        path_for_my_units = min(path_to_enemy, key=lambda p: len(p.cells))
+        # my paths
+        my_king = world.get_me().king.center
+        paths_from_me = world.get_paths_crossing_cell(cell=my_king)
+        # first enemy paths
+        first_enemy_king = world.get_first_enemy().king.center
+        paths_to_first_enemy = world.get_paths_crossing_cell(cell=first_enemy_king)
+        # second enemy paths
+        second_enemy_king = world.get_second_enemy().king.center
+        paths_to_second_enemy = world.get_paths_crossing_cell(cell=second_enemy_king)
+        ## Log ##
+        Logs.show_log(f"my king: {my_king}")
+        Logs.show_log(f"first king: {first_enemy_king}")
+        Logs.show_log(f"second king: {second_enemy_king}")
+        Logs.show_log(f"all path: {world.get_map().paths}")
+        Logs.show_log(f"path from me: {paths_from_me}")
+        Logs.show_log(f"path to first: {paths_to_first_enemy}")
+        Logs.show_log(f"path to second: {paths_to_second_enemy}")
+        ## Log ##
+        path_to_enemy = [path for path in paths_from_me if path in paths_to_first_enemy]
+        path_to_enemy.extend([path for path in paths_from_me if path in paths_to_second_enemy])
+        path_for_my_units = min(path_to_enemy,key=lambda p:len(p.cells))
         return path_for_my_units
 
     def put_units(self, world: World, path_for_my_units: Path):
@@ -65,11 +74,11 @@ class TurnHandler:
             for base_unit in myself.hand:
                 world.put_unit(base_unit=base_unit, path=path_for_my_units)
 
-# اسپل ها
-# دو نوع اسپل داریم
-# اسپل محیطی و اسپل یونیتی
-# اسپل های محیطی با توجه ب نوعشون باید در بهترین مکان زده بشن مثلا اسپل محیطی سم ک برای دشمن زده میشه باید در مکانی زده بشه ک بیشترین دشمن در اونجا قرار داره
-# و بقیه اسپل ها هم همینطور
+    # اسپل ها
+    # دو نوع اسپل داریم
+    # اسپل محیطی و اسپل یونیتی
+    # اسپل های محیطی با توجه ب نوعشون باید در بهترین مکان زده بشن مثلا اسپل محیطی سم ک برای دشمن زده میشه باید در مکانی زده بشه ک بیشترین دشمن در اونجا قرار داره
+    # و بقیه اسپل ها هم همینطور
 
     def spell_process(self, world: World):
         """
