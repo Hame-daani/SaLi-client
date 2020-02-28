@@ -1,8 +1,8 @@
 import random
 from typing import List
 
-from core.PickHandler import PickHandler
-from model import Path, Logs, Spell, SpellTarget
+from core.PickHandler import *
+from model import *
 from world import World
 
 
@@ -70,6 +70,79 @@ class TurnHandler:
 # اسپل محیطی و اسپل یونیتی
 # اسپل های محیطی با توجه ب نوعشون باید در بهترین مکان زده بشن مثلا اسپل محیطی سم ک برای دشمن زده میشه باید در مکانی زده بشه ک بیشترین دشمن در اونجا قرار داره
 # و بقیه اسپل ها هم همینطور
+    def GradeCell(self,units:List["Unit"]) ->int:
+        grad=0
+        for unit in units:
+            if(unit.hp<5):
+                grad=grad+4
+            elif(unit.hp<10):
+                grad=grad+2
+            else:
+                grad=grad+1
+        return grad
+    def BestCell(self,world:World, received_spell:Spell):
+        #-----------------------------
+        self.My_Player = world.get_me()
+        self.My_First_Enemy = world.get_first_enemy()
+        self.My_Second_Enemy = world.get_second_enemy()
+        self.My_Freind = world.get_friend()
+        #------------------------------
+
+        All_units_own=self.My_Player.units
+        All_units_enemy=self.My_First_Enemy.units
+
+        for unit in self.My_Freind.units:
+            All_units_own.append(unit)
+        for unit in self.My_Second_Enemy.units:
+            All_units_enemy.append(unit)
+        #--------------------------------
+        Select_Cell = None
+
+        if(received_spell.target==SpellTarget.ENEMY):
+            num_enemy_around_cell=0
+            grade_cell=0
+            #best cell for HP(Posion And Damage)
+            for unit in All_units_enemy:
+
+                target = world.get_area_spell_targets(center=unit.cell,spell=received_spell)
+                grade_cell_temp=self.GradeCell(target)
+
+                print("target : ",target.__len__(),"   grade : ",grade_cell_temp)
+
+                if(target.__len__()>=num_enemy_around_cell & grade_cell_temp>=grade_cell):
+                    print("garde : ",grade_cell_temp)
+                    num_enemy_around_cell=target.__len__()
+                    grade_cell=grade_cell_temp
+                    Select_Cell=unit.cell
+
+            print("target enemy : ",Select_Cell)
+
+        elif(received_spell.target==SpellTarget.ALLIED):
+            if(received_spell.type==SpellType.HP):
+                num_enemy_around_cell = 0
+                grade_cell = 0
+                for unit in All_units_own:
+                    target = world.get_area_spell_targets(center=unit.cell, spell=received_spell)
+                    grade_cell_temp = self.GradeCell(target)
+                    print("target : ", target.__len__(), "   grade : ", grade_cell_temp)
+                    if (target.__len__() >= num_enemy_around_cell & grade_cell_temp >= grade_cell):
+                        print("grade : ",grade_cell_temp)
+                        num_enemy_around_cell = target.__len__()
+                        grade_cell = grade_cell_temp
+                        Select_Cell = unit.cell
+            else:
+                #cell for Haste And Duolicate
+
+                num_enemy_around_cell = 0
+                for unit in All_units_own:
+                    target = world.get_area_spell_targets(center=unit.cell, spell=received_spell)
+                    if (target.__len__() > num_enemy_around_cell):
+                        num_enemy_around_cell = target.__len__()
+                        Select_Cell = unit.cell
+
+            print("target alied :", Select_Cell,"  nume unit : ",world.get_cell_units(Select_Cell).__len__())
+        print("Best Select_Cell : ",Select_Cell)
+        return Select_Cell
 
     def spell_process(self, world: World):
         """
@@ -86,23 +159,9 @@ class TurnHandler:
     def put_area_spell(self, received_spell: Spell, world: World):
         """
         """
-        if received_spell.target == SpellTarget.ENEMY:
-            enemy_units = world.get_first_enemy().units
-            enemy_units.extend(world.get_second_enemy().units)
-            if len(enemy_units) > 0:
-                world.cast_area_spell(
-                    center=enemy_units[0].cell, spell=received_spell)
-        elif received_spell.target == SpellTarget.ALLIED:
-            friend_units = world.get_friend().units
-            if len(friend_units) > 0:
-                world.cast_area_spell(
-                    center=friend_units[0].cell, spell=received_spell)
-        elif received_spell.target == SpellTarget.SELF:
-            myself = world.get_me()
-            my_units = myself.units
-            if len(my_units) > 0:
-                world.cast_area_spell(
-                    center=my_units[0].cell, spell=received_spell)
+        Target_Cell=self.BestCell(world,received_spell)
+        world.cast_area_spell(center=Target_Cell,spell=received_spell)
+
 
     def put_unit_spell(self, world: World, received_spell: Spell):
         """
