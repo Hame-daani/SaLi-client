@@ -6,15 +6,17 @@ from world import World
 
 
 class SpellHandler:
-    def __init__(self, paths_for_my_units: List[Path], targeted_enemy: Player):
+    def __init__(self, paths_for_my_units: List[Path], targeted_enemy: Player,splls: List[Spell]):
         super().__init__()
         self.paths_for_my_units = paths_for_my_units
         self.targeted_enemy = targeted_enemy
+        self._splls_=splls
 
     def process(self, world: World)-> Spell:
         """
         """
         # this code tries to cast the received spell
+
         received_spell = world.get_received_spell()
         if received_spell is not None:
             Logs.show_log(f"spell {received_spell.type} cast.")

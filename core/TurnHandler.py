@@ -35,7 +35,7 @@ class TurnHandler:
 
         # Process Spell Puting
         self.spell_handler = SpellHandler(
-            paths_for_my_units=self.paths_for_my_units, targeted_enemy=self.targeted_enemy, spells=self.spells)
+            paths_for_my_units=self.paths_for_my_units, targeted_enemy=self.targeted_enemy,splls=self.spells)
         spell = self.spell_handler.process(world)
         if spell:
             self.spells.append(spell)
