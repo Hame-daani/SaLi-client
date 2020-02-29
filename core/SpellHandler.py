@@ -16,12 +16,14 @@ class SpellHandler:
         """
         # this code tries to cast the received spell
         received_spell = world.get_received_spell()
-        if received_spell is not None:
-            Logs.show_log(f"spell {received_spell.type} cast.")
-            if received_spell.is_area_spell():
-                self.put_area_spell(received_spell, world)
+        if(received_spell is not None):
+            self.receive_spell=received_spell
+        if self.receive_spell is not None:
+            Logs.show_log(f"spell {self.receive_spell.type} cast.")
+            if self.receive_spell.is_area_spell():
+                self.put_area_spell(self.receive_spell, world)
             else:  # if is unit spell
-                self.put_unit_spell(world, received_spell)
+                self.put_unit_spell(world, self.receive_spell)
 
     def Check_Enemy_or_familiar_Unit(self, world: World, unit: Unit, enemy_familiar: bool) -> bool:
         """
@@ -163,7 +165,7 @@ class SpellHandler:
                     grade_cell_temp = self.GradeCell(target)
                     print("target : ", target.__len__(),
                           "   grade : ", grade_cell_temp)
-                    if (target.__len__() >= num_enemy_around_cell & grade_cell_temp >= grade_cell):
+                    if (target.__len__() >= num_enemy_around_cell & grade_cell_temp > grade_cell):
                         print("grade : ", grade_cell_temp)
                         num_enemy_around_cell = target.__len__()
                         grade_cell = grade_cell_temp
@@ -187,7 +189,9 @@ class SpellHandler:
         """
         """
         Target_Cell = self.BestCell(world, received_spell)
-        world.cast_area_spell(center=Target_Cell, spell=received_spell)
+        if(Target_Cell is not None):
+            world.cast_area_spell(center=Target_Cell, spell=received_spell)
+            self.receive_spell=None
 
     def put_unit_spell(self, world: World, received_spell: Spell):
         """
@@ -210,3 +214,4 @@ class SpellHandler:
             cell = path.cells[int((size - 1) / 2)]
             world.cast_unit_spell(
                 unit=unit, path=path, cell=cell, spell=received_spell)
+            self.receive_spell=None
