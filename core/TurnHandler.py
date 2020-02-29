@@ -23,6 +23,7 @@ class TurnHandler:
         self.unit_handler: UnitHandler = None
         self.spell_handler: SpellHandler = None
         self.upgrade_handler: UpgradeHandler = None
+        self.spells: List[Spell] = []
 
     def turn(self, world: World):
         """
@@ -34,8 +35,10 @@ class TurnHandler:
 
         # Process Spell Puting
         self.spell_handler = SpellHandler(
-            paths_for_my_units=self.paths_for_my_units, targeted_enemy=self.targeted_enemy)
-        self.spell_handler.process(world)
+            paths_for_my_units=self.paths_for_my_units, targeted_enemy=self.targeted_enemy, spells=self.spells)
+        spell = self.spell_handler.process(world)
+        if spell:
+            self.spells.append(spell)
 
         # Process Upgrades
         self.upgrade_handler = UpgradeHandler()
