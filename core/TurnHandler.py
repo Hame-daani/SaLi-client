@@ -2,7 +2,7 @@ import random
 from typing import List
 
 from core.PickHandler import PickHandler
-from model import Cell, Logs, Path, Spell, SpellTarget, SpellType, Unit
+from model import Cell, Logs, Path, Spell, SpellTarget, SpellType, Unit, Player
 from world import World
 
 
@@ -13,6 +13,8 @@ class TurnHandler:
     def __init__(self, pick_handler: PickHandler):
         super().__init__()
         self.pick_handler = pick_handler
+        self.paths_for_my_units: List[Path] = None
+        self.targeted_enemy: Player = None
 
     def turn(self, world: World):
         """
@@ -24,21 +26,24 @@ class TurnHandler:
         # Process Upgrades
         self.upgrade_process(world)
 
-    # enemy = false familiar= true
-    # این نابع چک میکند که یونیت داده شده جز آن دسته خواسته شده است یا نه
     def Check_Enemy_or_familiar_Unit(self, world: World, unit: Unit, enemy_familiar: bool) -> bool:
+        """
+        این نابع چک میکند که یونیت داده شده جز آن دسته خواسته شده است یا نه
+        enemy = false
+        familiar= true
+        """
         # -----------------------------
-        self.My_Player = world.get_me()
-        self.My_First_Enemy = world.get_first_enemy()
-        self.My_Second_Enemy = world.get_second_enemy()
-        self.My_Freind = world.get_friend()
+        My_Player = world.get_me()
+        My_First_Enemy = world.get_first_enemy()
+        My_Second_Enemy = world.get_second_enemy()
+        My_Freind = world.get_friend()
         # ------------------------------
-        All_units_own = self.My_Player.units
-        All_units_enemy = self.My_First_Enemy.units
+        All_units_own = My_Player.units
+        All_units_enemy = My_First_Enemy.units
 
-        for unit in self.My_Freind.units:
+        for unit in My_Freind.units:
             All_units_own.append(unit)
-        for unit in self.My_Second_Enemy.units:
+        for unit in My_Second_Enemy.units:
             All_units_enemy.append(unit)
         # --------------------------------
         if(enemy_familiar == False):
@@ -51,16 +56,22 @@ class TurnHandler:
                 return True
             else:
                 return False
-    # این تابع فاصله منهتنی یک سلول نسبت به یک سلول دیگر را برمیگردانذ
 
     def Manhatan_Distance(self, BeginingCell: Cell, EndingCell: Cell) -> int:
+        """
+        این تابع فاصله منهتنی یک سلول نسبت به یک سلول دیگر را برمیگردانذ
+        """
         import math
         dist = math.fabs(BeginingCell.row-EndingCell.row) + \
             math.fabs(BeginingCell.col-EndingCell.col)
         return dist
-    # این تابع باید چک کند در فاصله k از یک خانه یونیتی وجود دارد
 
     def Check_Unit_Number_in_Manhatan(self, world: World, Center: Cell, distance: int, enemy_familiar: bool) -> int:
+        """
+        این تابع باید چک کند در فاصله
+        k 
+        از یک خانه یونیتی وجود دارد
+        """
         All_path_in_map = world.get_map().paths
         All_path_have_Center_Cell = []
         Number_unit = 0
@@ -85,12 +96,23 @@ class TurnHandler:
     def unit_process(self, world: World):
         """
         """
-        path_for_my_units = self.choose_path(world)
-        Logs.show_log(f"path {path_for_my_units} chosen")
-        self.put_units(world, path_for_my_units)
+        self.choose_path(world)
+        Logs.show_log(f"chosen path {self.paths_for_my_units}")
+        self.put_units(world)
 
-    def choose_path(self, world: World) -> Path:
+    def choose_path(self, world: World):
         """
+        choose path and put it in self.paths_for_my_nits
+        """
+        if(world.get_friend().is_alive()):
+            paths_for_my_units = self.choose_path_with_allied(world)
+        else:
+            paths_for_my_units = self.choose_path_without_allied(world)
+        self.paths_for_my_units = paths_for_my_units
+
+    def choose_path_with_allied(self, world: World) -> List[Path]:
+        """
+        return chosen path
         """
         # my paths
         my_king = world.get_me().king.center
@@ -117,20 +139,32 @@ class TurnHandler:
         path_to_enemy.extend(
             [path for path in paths_from_me if path in paths_to_second_enemy])
         path_for_my_units = min(path_to_enemy, key=lambda p: len(p.cells))
-        # ----------------------------------
-        self.path_for_my_units_ = path_for_my_units
-        # ----------------------------------
-        return path_for_my_units
+        # choose targeted enemy
+        if(path_for_my_units in paths_to_first_enemy):
+            self.targeted_enemy = world.get_first_enemy()
+        else:
+            self.targeted_enemy = world.get_second_enemy()
+        return [path_for_my_units]
 
-    def put_units(self, world: World, path_for_my_units: Path):
+    def choose_path_without_allied(self, world: World) -> List[Path]:
+        """
+        return chosen path
+        """
+        paths_for_my_units = []
+        paths_for_my_units.extend(self.choose_path_with_allied(world))
+        paths_for_my_units.extend(world.get_me().path_to_friend)
+        return paths_for_my_units
+
+    def put_units(self, world: World):
         """
         """
+        # TODO: need refactor
         myself = world.get_me()
         max_ap = world.get_game_constants().max_ap
         # play all of hand once your ap reaches maximum. if ap runs out, putUnit doesn't do anything
         if myself.ap >= max_ap // 2:
             for base_unit in myself.hand:
-                world.put_unit(base_unit=base_unit, path=path_for_my_units)
+                world.put_unit(base_unit=base_unit, path=self.paths_for_my_units)
 
 # اسپل ها
 # دو نوع اسپل داریم
@@ -150,18 +184,18 @@ class TurnHandler:
 
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
-        self.My_Player = world.get_me()
-        self.My_First_Enemy = world.get_first_enemy()
-        self.My_Second_Enemy = world.get_second_enemy()
-        self.My_Freind = world.get_friend()
+        My_Player = world.get_me()
+        My_First_Enemy = world.get_first_enemy()
+        My_Second_Enemy = world.get_second_enemy()
+        My_Freind = world.get_friend()
         # ------------------------------
 
-        All_units_own = self.My_Player.units
-        All_units_enemy = self.My_First_Enemy.units
+        All_units_own = My_Player.units
+        All_units_enemy = My_First_Enemy.units
 
-        for unit in self.My_Freind.units:
+        for unit in My_Freind.units:
             All_units_own.append(unit)
-        for unit in self.My_Second_Enemy.units:
+        for unit in My_Second_Enemy.units:
             All_units_enemy.append(unit)
         # --------------------------------
         Select_Cell = None
@@ -176,10 +210,10 @@ class TurnHandler:
                     center=unit.cell, spell=received_spell)
                 grade_cell_temp = self.GradeCell(target)
 
-                print("target : ", target.__len__(),
+                print("target : ", len(target),
                       "   grade : ", grade_cell_temp)
 
-                if(target.__len__() >= num_enemy_around_cell & grade_cell_temp >= grade_cell):
+                if(len(target) >= num_enemy_around_cell & grade_cell_temp >= grade_cell):
                     print("garde : ", grade_cell_temp)
                     num_enemy_around_cell = target.__len__()
                     grade_cell = grade_cell_temp
