@@ -4,6 +4,7 @@ from typing import List
 from core.PickHandler import PickHandler
 from core.SpellHandler import SpellHandler
 from core.UnitHandler import UnitHandler
+from core.UpgradeHandler import UpgradeHandler
 from model import Cell, Logs, Path, Player, Spell, SpellTarget, SpellType, Unit
 from world import World
 
@@ -21,6 +22,7 @@ class TurnHandler:
         self.targeted_enemy: Player = None
         self.unit_handler: UnitHandler = None
         self.spell_handler: SpellHandler = None
+        self.upgrade_handler: UpgradeHandler = None
 
     def turn(self, world: World):
         """
@@ -36,16 +38,5 @@ class TurnHandler:
         self.spell_handler.process(world)
 
         # Process Upgrades
-        self.upgrade_process(world)
-
-    def upgrade_process(self, world: World):
-        """
-        """
-        # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
-        myself = world.get_me()
-        if world.get_range_upgrade_number or world.get_damage_upgrade_number:
-            Logs.show_log(f"have upgrade.")
-        if len(myself.units) > 0:
-            unit = myself.units[0]
-            world.upgrade_unit_damage(unit=unit)
-            world.upgrade_unit_range(unit=unit)
+        self.upgrade_handler = UpgradeHandler()
+        self.upgrade_handler.process(world)

@@ -28,7 +28,7 @@ class UnitHandler:
                 world)
         return paths_for_my_units, targeted_enemy
 
-    def choose_path_with_allied(self, world: World) -> List[Path]:
+    def choose_path_with_allied(self, world: World):
         """
         return chosen path
         """
@@ -64,7 +64,7 @@ class UnitHandler:
             targeted_enemy = world.get_second_enemy()
         return [path_for_my_units], targeted_enemy
 
-    def choose_path_without_allied(self, world: World) -> List[Path]:
+    def choose_path_without_allied(self, world: World):
         """
         return chosen path
         """
