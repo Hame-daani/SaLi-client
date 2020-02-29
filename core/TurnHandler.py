@@ -29,8 +29,8 @@ class TurnHandler:
         """
         # Process Unit Puting
         self.unit_handler = UnitHandler()
-        self.paths_for_my_units, self.targeted_enemy = self.unit_handler.process(
-            world)
+        p, t = self.unit_handler.process(world)
+        self.paths_for_my_units, self.targeted_enemy = p, t
 
         # Process Spell Puting
         self.spell_handler = SpellHandler(

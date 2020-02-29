@@ -1,6 +1,6 @@
 from typing import List
 
-from model import Logs, Path
+from model import Logs, Path, Player
 from world import World
 
 
@@ -8,7 +8,7 @@ class UnitHandler:
     def __init__(self):
         super().__init__()
 
-    def process(self, world: World):
+    def process(self, world: World) -> (List[Path], Player):
         """
         """
         paths_for_my_units, targeted_enemy = self.choose_path(world)
@@ -16,7 +16,7 @@ class UnitHandler:
         self.put_units(world, paths_for_my_units)
         return paths_for_my_units, targeted_enemy
 
-    def choose_path(self, world: World):
+    def choose_path(self, world: World) -> (List[Path], Player):
         """
         choose path and put it in self.paths_for_my_nits
         """
@@ -28,7 +28,7 @@ class UnitHandler:
                 world)
         return paths_for_my_units, targeted_enemy
 
-    def choose_path_with_allied(self, world: World):
+    def choose_path_with_allied(self, world: World) -> (List[Path], Player):
         """
         return chosen path
         """
@@ -64,14 +64,14 @@ class UnitHandler:
             targeted_enemy = world.get_second_enemy()
         return [path_for_my_units], targeted_enemy
 
-    def choose_path_without_allied(self, world: World):
+    def choose_path_without_allied(self, world: World) -> (List[Path], Player):
         """
         return chosen path
         """
         paths_for_my_units = []
         paths, targeted_enemy = self.choose_path_with_allied(world)
         paths_for_my_units.extend(paths)
-        paths_for_my_units.extend(world.get_me().path_to_friend)
+        paths_for_my_units.append(world.get_me().path_to_friend)
         return paths_for_my_units, targeted_enemy
 
     def put_units(self, world: World, paths_for_my_units):
@@ -79,9 +79,6 @@ class UnitHandler:
         """
         # TODO: need refactor
         myself = world.get_me()
-        max_ap = world.get_game_constants().max_ap
-        # play all of hand once your ap reaches maximum. if ap runs out, putUnit doesn't do anything
-        if myself.ap >= max_ap // 2:
-            for base_unit in myself.hand:
-                world.put_unit(base_unit=base_unit,
-                               path=paths_for_my_units)
+        for unit in myself.hand:
+            if unit.ap <= myself.ap:
+                world.put_unit(base_unit=unit, path=paths_for_my_units[0])
