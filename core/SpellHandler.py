@@ -59,11 +59,12 @@ class SpellHandler:
         این تابع فاصله منهتنی یک سلول نسبت به یک سلول دیگر را برمیگردانذ
         """
         import math
-        dist = math.fabs(BeginingCell.row-EndingCell.row) + \
-            math.fabs(BeginingCell.col-EndingCell.col)
+        dist =int( math.fabs(BeginingCell.row-EndingCell.row) +
+            math.fabs(BeginingCell.col-EndingCell.col))
         return dist
 
-    def Check_Unit_Number_in_Manhatan(self, world: World, Center: Cell, distance: int, enemy_familiar: bool) -> int:
+    def Check_Unit_Number_in_Manhatan(self, world: World, Center: Cell, distance: int
+                                      , enemy_familiar: bool) -> List["Path"]:
         """
         این تابع باید چک کند در فاصله
         k 
@@ -71,17 +72,21 @@ class SpellHandler:
         """
         All_path_in_map = world.get_map().paths
         All_path_have_Center_Cell = []
-        Number_unit = 0
+        Enemy_in_path=[]
         for path in All_path_in_map:
             if(path.cells.__contains__(Center)):
                 All_path_have_Center_Cell.append(path)
         for path in All_path_have_Center_Cell:
+            Number_unit = 0
             for cell in path.cells:
                 if(self.Manhatan_Distance(Center, cell) <= distance):
                     for unit in world.get_cell_units(cell=cell):
                         if(self.Check_Enemy_or_familiar_Unit(world, unit, enemy_familiar) == True):
                             Number_unit = Number_unit+1
-        return Number_unit
+            if(Number_unit>0):
+                Enemy_in_path.append(path)
+                break
+        return Enemy_in_path
 
     # استراتیزی...
     # مسیر ها
@@ -97,7 +102,7 @@ class SpellHandler:
 # اسپل های محیطی با توجه ب نوعشون باید در بهترین مکان زده بشن مثلا اسپل محیطی سم ک برای دشمن زده میشه باید در مکانی زده بشه ک بیشترین دشمن در اونجا قرار داره
 # و بقیه اسپل ها هم همینطور
 
-    def GradeCell(self, units: List["Unit"]) -> int:
+    def GradeCell(self, units:List["Unit"]) -> int:
         grad = 0
         for unit in units:
             if(unit.hp < 5):
@@ -189,8 +194,16 @@ class SpellHandler:
         """
         myself = world.get_me()
         my_units = myself.units
+        Grade_tele=0
         if len(my_units) > 0:
-            unit = my_units[0]
+            unit = None
+            for _unit in my_units:
+                if(self.Manhatan_Distance(BeginingCell=myself.king.center,EndingCell=_unit.cell)<=3):
+                    temp_grade=_unit.hp+_unit.damage_level
+                    if(temp_grade>Grade_tele):
+                        Grade_tele=temp_grade
+                        unit=_unit
+
             my_paths = self.paths_for_my_units
             path = my_paths[random.randint(0, len(my_paths) - 1)]
             size = len(path.cells)
