@@ -28,11 +28,13 @@ class UpgradeHandler:
         if len(my_units) > 0:
 
             for _unit in my_units:
-              temp_grade = _unit.hp + _unit.damage_level
-              if (temp_grade > Grade_Upgrade):
-                  Grade_Upgrade = temp_grade
-                  unit = _unit
-            world.upgrade_unit_damage(unit=unit)
+               if(_unit.range>1):
+                    temp_grade = _unit.hp + _unit.damage_level+_unit.range
+                    if (temp_grade > Grade_Upgrade):
+                         Grade_Upgrade = temp_grade
+                         unit = _unit
             world.upgrade_unit_range(unit=unit)
+            world.upgrade_unit_damage(unit=unit)
+
 
 
