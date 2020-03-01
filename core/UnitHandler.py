@@ -12,7 +12,6 @@ class UnitHandler:
         """
         """
         paths_for_my_units, targeted_enemy = self.choose_path(world)
-        Logs.show_log(f"chosen path {paths_for_my_units}")
         self.put_units(world, paths_for_my_units)
         return paths_for_my_units, targeted_enemy
 
@@ -43,15 +42,6 @@ class UnitHandler:
         second_enemy_king = world.get_second_enemy().king.center
         paths_to_second_enemy = world.get_paths_crossing_cell(
             cell=second_enemy_king)
-        ## Log ##
-        Logs.show_log(f"my king: {my_king}")
-        Logs.show_log(f"first king: {first_enemy_king}")
-        Logs.show_log(f"second king: {second_enemy_king}")
-        Logs.show_log(f"all path: {world.get_map().paths}")
-        Logs.show_log(f"path from me: {paths_from_me}")
-        Logs.show_log(f"path to first: {paths_to_first_enemy}")
-        Logs.show_log(f"path to second: {paths_to_second_enemy}")
-        ## Log ##
         path_to_enemy = [
             path for path in paths_from_me if path in paths_to_first_enemy]
         path_to_enemy.extend(
@@ -77,8 +67,44 @@ class UnitHandler:
     def put_units(self, world: World, paths_for_my_units):
         """
         """
-        # TODO: need refactor
+        friend = world.get_friend()
+        if friend.get_hp() < 80:
+            self.allied_mode(world)
+        elif self.in_danger():
+            self.defense_mode(world)
+        else:
+            self.attack_mode(world, paths_for_my_units)
+
+    def allied_mode(self, world: World):
+        """
+        """
+        target_cell = world.get_friend().king.target_cell
+        paths = world.get_friend().paths_from_player
+        target_path = None
+        for path in paths:
+            if target_cell in path.cells:
+                target_path = path
+                break
+        Logs.show_log(f"cell: {target_cell}\npath: {target_path}")
+        self.attack_mode(world, [target_path])
+
+    def in_danger(self):
+        """
+        """
+        return False
+
+    def defense_mode(self, world: World):
+        """
+        """
+        pass
+
+    def attack_mode(self, world: World, paths_for_my_units):
+        """
+        """
         myself = world.get_me()
-        for unit in myself.hand:
+        hand = sorted(myself.hand, key=lambda u: (
+            u.base_range+u.base_attack+u.max_hp)-(u.ap*2))
+        # reversed
+        for unit in reversed(hand):
             if unit.ap <= myself.ap:
                 world.put_unit(base_unit=unit, path=paths_for_my_units[0])
