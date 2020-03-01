@@ -24,6 +24,16 @@ class SpellHandler:
               received_spell =  self.put_area_spell(received_spell, world)
             else:  # if is unit spell
               received_spell =  self.put_unit_spell(world,received_spell)
+        for spell in self._splls_:
+            cast_spell = spell
+            Logs.show_log(f"spell {cast_spell.type} cast.")
+            if cast_spell.is_area_spell():
+                cast_spell = self.put_area_spell(cast_spell, world)
+            else:  # if is unit spell
+                cast_spell = self.put_unit_spell(world, cast_spell)
+            if(cast_spell is None):
+                self._splls_.remove(spell)
+
         return received_spell
 
     def Check_Enemy_or_familiar_Unit(self, world: World, unit: Unit, enemy_familiar: bool) -> bool:
