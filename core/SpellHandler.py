@@ -188,16 +188,32 @@ class SpellHandler:
                         num_enemy_around_cell = target.__len__()
                         grade_cell = grade_cell_temp
                         Select_Cell = unit.cell
-            else:
+            elif(received_spell.type == SpellType.DUPLICATE):
                 # cell for Haste And Duolicate
                 num_enemy_around_cell = 0
+                distance_unit_to_select_enemy=0
+
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
-                    if (target.__len__() > num_enemy_around_cell):
-                        Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit}")
+                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
+                    if (target.__len__() > num_enemy_around_cell & targeted_cell_enemy>distance_unit_to_select_enemy ):
+                        Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit} -- dist to enemy :{targeted_cell_enemy}")
+                        distance_unit_to_select_enemy=targeted_cell_enemy
                         num_enemy_around_cell = target.__len__()
                         Select_Cell = unit.cell
+            else:
+                num_enemy_around_cell = 0
+
+                for unit in All_units_own:
+                    target = world.get_area_spell_targets(
+                        center=unit.cell, spell=received_spell)
+                    if (target.__len__() > num_enemy_around_cell ):
+                        Logs.show_log(
+                            f" Number arround : {len(target)}  --  Unit :{unit} ")
+                        num_enemy_around_cell = target.__len__()
+                        Select_Cell = unit.cell
+
             Logs.show_log(f"target alied best select  :{Select_Cell}")
 
         return Select_Cell
