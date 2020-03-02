@@ -6,12 +6,17 @@ from world import World
 
 
 class SpellHandler:
-    def __init__(self, paths_for_my_units: List[Path], targeted_enemy: Player,splls: List[Spell]):
+    def __init__(self, paths_for_my_units: List[Path],splls: List[Spell]):
         super().__init__()
         self.paths_for_my_units = paths_for_my_units
-        self.targeted_enemy = targeted_enemy
+        self.targeted_enemy=self.Targeted_enemy()
         self._splls_=splls
-
+    def Targeted_enemy(self)->Player:
+        My_First_Enemy = World.get_first_enemy()
+        My_Second_Enemy = World.get_second_enemy()
+        for path in self.paths_for_my_units:
+            if My_First_Enemy.king.center in path.cells:return My_First_Enemy
+            if My_Second_Enemy.king.center in path.cells:return My_Second_Enemy
     def process(self, world: World)-> Spell:
         """
         """
