@@ -10,7 +10,7 @@ class SpellHandler:
         super().__init__()
         self.paths_for_my_units = paths_for_my_units
         self._splls_=splls
-        self.targeted_enemy=None
+        self.targeted_enemy:Player=None
     def Targeted_enemy(self,world:World)->Player:
         My_First_Enemy = world.get_first_enemy()
         My_Second_Enemy = world.get_second_enemy()
@@ -80,9 +80,10 @@ class SpellHandler:
         این تابع فاصله منهتنی یک سلول نسبت به یک سلول دیگر را برمیگردانذ
         """
         import math
-        dist =int( math.fabs(BeginingCell.row-EndingCell.row) +
-            math.fabs(BeginingCell.col-EndingCell.col))
-        return dist
+        dist_row =math.fabs(BeginingCell.row-EndingCell.row)
+        dist_cul=math.fabs(BeginingCell.col-EndingCell.col)
+        dist=dist_cul+dist_row
+        return int(dist)
 
     def Check_Unit_Number_in_Manhatan(self, world: World, Center: Cell, distance: int
                                       , enemy_familiar: bool) -> List["Path"]:
@@ -140,8 +141,6 @@ class SpellHandler:
                 grad = grad+4
             elif(unit.base_unit.max_hp-unit.hp <= 10):
                 grad = grad+2
-            else:
-                grad = grad+1
         return grad
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
@@ -185,13 +184,14 @@ class SpellHandler:
         elif(received_spell.target == SpellTarget.ALLIED):
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
             if(received_spell.type == SpellType.HP):
-                num_enemy_around_cell = 0
-                grade_cell = 0
+                num_enemy_around_cell = 3
+                grade_cell = 5
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
                     grade_cell_temp = self.Grade_Hp_Allied_Cell(target)
-                    if (target.__len__() >= num_enemy_around_cell & grade_cell_temp > grade_cell):
+                    Logs.show_log(f" hp -> {grade_cell_temp} - > num unit : {len(target)}")
+                    if (len(target) >= num_enemy_around_cell and grade_cell_temp > grade_cell):
                         Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
                         num_enemy_around_cell = target.__len__()
                         grade_cell = grade_cell_temp
@@ -204,7 +204,7 @@ class SpellHandler:
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
-                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy)
+                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
                     if (target.__len__() > num_enemy_around_cell & targeted_cell_enemy<distance_unit_to_select_enemy ):
                         Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit} -- dist to enemy :{targeted_cell_enemy}")
                         distance_unit_to_select_enemy=targeted_cell_enemy
