@@ -1,7 +1,7 @@
 import random
 from typing import List
 
-from model import Path
+from model import Path, Logs
 from world import World
 
 
@@ -16,3 +16,5 @@ class PickHandler:
         # pre process
         my_hand_ids = [0, 1, 2, 5, 6]
         world.choose_hand_by_id(type_ids=my_hand_ids)
+        paths = world.get_map().paths
+        Logs.show_log(f"Paths: {paths}")
