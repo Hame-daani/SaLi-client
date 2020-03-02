@@ -14,7 +14,7 @@ from core.TurnHandler import TurnHandler
 class AI:
     def __init__(self):
         self.pick_handler = PickHandler()
-        self.turn_handler = None
+        self.turn_handler = TurnHandler(pick_handler=self.pick_handler)
 
     def pick(self, world: World):
         """
@@ -31,7 +31,6 @@ class AI:
         """
         start_time = time.time()
         Logs.show_log(f"turn {world.get_current_turn()} started.")
-        self.turn_handler = TurnHandler(pick_handler=self.pick_handler)
         self.turn_handler.turn(world)
         Logs.show_log(
             f"turn {world.get_current_turn()} finished. time: {time.time() - start_time:.4f}")
