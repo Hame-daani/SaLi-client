@@ -148,6 +148,7 @@ class SpellHandler:
         if(received_spell.target == SpellTarget.ENEMY):
             num_enemy_around_cell = 0
             grade_cell = 0
+            Targets=[]
             Logs.show_log(f"target enemy -> spell type : {received_spell.type}")
             # best cell for HP(Posion And Damage)
             for unit in All_units_enemy:
@@ -160,8 +161,10 @@ class SpellHandler:
                     num_enemy_around_cell = target.__len__()
                     grade_cell = grade_cell_temp
                     Select_Cell = unit.cell
-
+                    Targets=target
             Logs.show_log(f"Target cell :{Select_Cell}")
+            for uni in Targets:
+                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp}"))
 
         elif(received_spell.target == SpellTarget.ALLIED):
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
@@ -173,7 +176,7 @@ class SpellHandler:
                         center=unit.cell, spell=received_spell)
                     grade_cell_temp = self.GradeCell(target)
                     if (target.__len__() >= num_enemy_around_cell & grade_cell_temp > grade_cell):
-                        Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
+                        Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
                         num_enemy_around_cell = target.__len__()
                         grade_cell = grade_cell_temp
                         Select_Cell = unit.cell
@@ -184,7 +187,7 @@ class SpellHandler:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
                     if (target.__len__() > num_enemy_around_cell):
-                        Logs.show_log(f"Number arround:{len(target)} -- Unit:{unit}")
+                        Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit}")
                         num_enemy_around_cell = target.__len__()
                         Select_Cell = unit.cell
             Logs.show_log(f"target alied best select  :{Select_Cell}")
