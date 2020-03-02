@@ -67,13 +67,25 @@ class UnitHandler:
     def put_units(self, world: World, paths_for_my_units):
         """
         """
-        friend = world.get_friend()
-        if friend.get_hp() < 80:
-            self.allied_mode(world)
-        elif self.in_danger():
+        if self.in_danger(world):
+            Logs.show_log(f"goes in defense mode.")
             self.defense_mode(world)
+        # elif len(paths_for_my_units) > 1:  # friend died!
+        #     self.delta_mode(world, paths_for_my_units)
+        elif self.friend_in_danger(world):
+            Logs.show_log(f"goes in allied mode.")
+            self.allied_mode(world)
         else:
+
+            Logs.show_log(f"goes in attack mode.")
             self.attack_mode(world, paths_for_my_units)
+
+    def friend_in_danger(self, world: World):
+        """
+        """
+        if world.get_friend().king.target_cell:
+            return True
+        return False
 
     def allied_mode(self, world: World):
         """
@@ -85,26 +97,60 @@ class UnitHandler:
             if target_cell in path.cells:
                 target_path = path
                 break
-        Logs.show_log(f"cell: {target_cell}\npath: {target_path}")
         self.attack_mode(world, [target_path])
 
-    def in_danger(self):
+    def in_danger(self, world: World):
         """
         """
+        if world.get_me().king.target_cell:
+            return True
         return False
 
     def defense_mode(self, world: World):
         """
         """
-        pass
+        target_cell = world.get_me().king.target_cell
+        paths = world.get_me().paths_from_player
+        target_path = None
+        for path in paths:
+            if target_cell in path.cells:
+                target_path = path
+                break
+        self.attack_mode(world, [target_path])
 
     def attack_mode(self, world: World, paths_for_my_units):
         """
         """
-        myself = world.get_me()
-        hand = sorted(myself.hand, key=lambda u: (
-            u.base_range+u.base_attack+u.max_hp)-(u.ap*2))
+        hand, myself = self.choose_units(world)
         # reversed
         for unit in reversed(hand):
             if unit.ap <= myself.ap:
+                myself.ap -= unit.ap
+                Logs.show_log(f"unit: {unit}\npath: {paths_for_my_units[0]}")
                 world.put_unit(base_unit=unit, path=paths_for_my_units[0])
+
+    def delta_mode(self, world: World, paths_for_my_units):
+        hand, myself = self.choose_units(world)
+        paths = world.get_me().paths_from_player
+        i = 0
+        for unit in reversed(hand):
+            if unit.ap <= myself.ap:
+                myself.ap -= unit.ap
+                world.put_unit(base_unit=unit, path=paths[i])
+                i += 1
+
+    def choose_units(self, world: World):
+        """
+        """
+        myself = world.get_me()
+        range_factor = 1
+        attack_factor = 4
+        hp_factor = 1
+        ap_factor = 4
+
+        def chooser(unit): return (
+            (unit.base_range*range_factor) +
+            (unit.base_attack*attack_factor) +
+            (unit.max_hp*hp_factor))/3 - (unit.ap*ap_factor)
+        hand = sorted(myself.hand, key=chooser)
+        return hand, myself

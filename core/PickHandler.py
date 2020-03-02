@@ -14,5 +14,5 @@ class PickHandler:
 
     def pick(self, world: World):
         # pre process
-        my_hand_ids = [1, 5, 7, 8, 3]
+        my_hand_ids = [0, 1, 2, 5, 6]
         world.choose_hand_by_id(type_ids=my_hand_ids)
