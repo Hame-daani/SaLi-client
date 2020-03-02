@@ -9,18 +9,21 @@ class SpellHandler:
     def __init__(self, paths_for_my_units: List[Path],splls: List[Spell]):
         super().__init__()
         self.paths_for_my_units = paths_for_my_units
-        self.targeted_enemy=self.Targeted_enemy()
         self._splls_=splls
-    def Targeted_enemy(self)->Player:
-        My_First_Enemy = World.get_first_enemy()
-        My_Second_Enemy = World.get_second_enemy()
+        self.targeted_enemy=None
+    def Targeted_enemy(self,world:World)->Player:
+        My_First_Enemy = world.get_first_enemy()
+        My_Second_Enemy = world.get_second_enemy()
         for path in self.paths_for_my_units:
-            if My_First_Enemy.king.center in path.cells:return My_First_Enemy
-            if My_Second_Enemy.king.center in path.cells:return My_Second_Enemy
+            if My_First_Enemy.king.center in path.cells:
+                return My_First_Enemy
+            if My_Second_Enemy.king.center in path.cells:
+                return My_Second_Enemy
     def process(self, world: World)-> Spell:
         """
         """
         # this code tries to cast the received spell
+        self.targeted_enemy=self.Targeted_enemy(world)
         received_spell = world.get_received_spell()
         if received_spell is not None:
             Logs.show_log(f"spell {received_spell.type} cast.")
@@ -201,7 +204,7 @@ class SpellHandler:
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
-                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
+                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy)
                     if (target.__len__() > num_enemy_around_cell & targeted_cell_enemy<distance_unit_to_select_enemy ):
                         Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit} -- dist to enemy :{targeted_cell_enemy}")
                         distance_unit_to_select_enemy=targeted_cell_enemy
