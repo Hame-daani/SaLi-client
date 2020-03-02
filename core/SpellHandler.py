@@ -184,11 +184,10 @@ class SpellHandler:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
                     if (target.__len__() > num_enemy_around_cell):
+                        Logs.show_log(f"Number arround:{len(target)} -- Unit:{unit}")
                         num_enemy_around_cell = target.__len__()
                         Select_Cell = unit.cell
-
-            print("target alied :", Select_Cell, "  nume unit : ",
-                  world.get_cell_units(Select_Cell).__len__())
+            Logs.show_log(f"target alied best select  :{Select_Cell}")
 
         return Select_Cell
 

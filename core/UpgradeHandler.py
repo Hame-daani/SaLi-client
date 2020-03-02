@@ -23,7 +23,7 @@ class UpgradeHandler:
         my_units=myself.units
         Grade_Upgrade = 0
         unit = None
-        if world.get_range_upgrade_number or world.get_damage_upgrade_number:
+        if world.get_range_upgrade_number is not 0 or world.get_damage_upgrade_number is not 0:
             Logs.show_log(f"have upgrade.")
             Logs.show_log(f"range :{world.get_range_upgrade_number()}")
             Logs.show_log(f"damage :{world.get_damage_upgrade_number()}")
