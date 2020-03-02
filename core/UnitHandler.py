@@ -30,8 +30,7 @@ class UnitHandler:
         else:
 
             Logs.show_log(f"goes in attack mode.")
-            paths_for_my_units = self.attack_mode(
-                world, paths_for_my_units)
+            paths_for_my_units = self.attack_mode(world)
         return paths_for_my_units
 
     def choose_units(self, world: World):
@@ -120,7 +119,7 @@ class UnitHandler:
                     break
         return [target_path]
 
-    def attack_mode(self, world: World, paths_for_my_units):
+    def attack_mode(self, world: World):
         """
         """
         # my paths
