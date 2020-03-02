@@ -8,14 +8,14 @@ class UnitHandler:
     def __init__(self):
         super().__init__()
 
-    def process(self, world: World) -> (List[Path], Player):
+    def process(self, world: World) -> List[Path]:
         """
         """
         paths_for_my_units = self.choose_path(world)
         Logs.show_log(
             f"choosen paths: {[path.id for path in paths_for_my_units]}")
         self.put_units(world, paths_for_my_units)
-        return paths_for_my_units, None
+        return paths_for_my_units
 
     def choose_path(self, world: World):
         """
