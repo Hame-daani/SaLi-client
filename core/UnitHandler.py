@@ -102,20 +102,39 @@ class UnitHandler:
     def in_danger(self, world: World):
         """
         """
-        if world.get_me().king.target_cell:
-            return True
+        enemy_units = world.get_first_enemy().units
+        enemy_units.extend(world.get_second_enemy().units)
+        for path in world.get_me().paths_from_player:
+            # units in cell 8 => king.range+2
+            # to be perepared
+            cell_units = world.get_cell_units(path.cells[7])
+            cell_units.extend(world.get_cell_units(path.cells[6]))
+            if any(unit in cell_units for unit in enemy_units):
+                return True
         return False
 
     def defense_mode(self, world: World):
         """
         """
         target_cell = world.get_me().king.target_cell
-        paths = world.get_me().paths_from_player
-        target_path = None
-        for path in paths:
-            if target_cell in path.cells:
-                target_path = path
-                break
+        if not target_cell:
+            enemy_units = world.get_first_enemy().units
+            enemy_units.extend(world.get_second_enemy().units)
+            for path in world.get_me().paths_from_player:
+                # units in cell 7 and 8 => king.range+2
+                # to be perepared
+                cell_units = world.get_cell_units(path.cells[7])
+                cell_units.extend(world.get_cell_units(path.cells[6]))
+                if any(unit in cell_units for unit in enemy_units):
+                    target_path = path
+                    break
+        else:
+            paths = world.get_me().paths_from_player
+            target_path = None
+            for path in paths:
+                if target_cell in path.cells:
+                    target_path = path
+                    break
         self.attack_mode(world, [target_path])
 
     def attack_mode(self, world: World, paths_for_my_units):
