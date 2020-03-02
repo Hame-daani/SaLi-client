@@ -37,7 +37,7 @@ class UnitHandler:
         """
         """
         myself = world.get_me()
-        range_factor = 1
+        range_factor = 2
         attack_factor = 4
         hp_factor = 1
         ap_factor = 4
@@ -84,6 +84,8 @@ class UnitHandler:
     def in_danger(self, world: World):
         """
         """
+        if world.get_me().king.target_cell:
+            return True
         enemy_units = world.get_first_enemy().units
         enemy_units.extend(world.get_second_enemy().units)
         for path in world.get_me().paths_from_player:
