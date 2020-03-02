@@ -16,7 +16,6 @@ class SpellHandler:
         """
         """
         # this code tries to cast the received spell
-
         received_spell = world.get_received_spell()
         if received_spell is not None:
             Logs.show_log(f"spell {received_spell.type} cast.")
@@ -25,7 +24,7 @@ class SpellHandler:
             else:  # if is unit spell
               received_spell =  self.put_unit_spell(world,received_spell)
         for spell in self._splls_:
-            Logs.show_log(f"Spell list :{spell}")
+            Logs.show_log(f" 0(*_._*)0 Spell list 0(*_._*)0 :{spell}")
             cast_spell = spell
             Logs.show_log(f"spell {cast_spell.type} cast.")
             if cast_spell.is_area_spell():
@@ -34,7 +33,7 @@ class SpellHandler:
                 cast_spell = self.put_unit_spell(world, cast_spell)
             if(cast_spell is None):
                 self._splls_.remove(spell)
-
+        Logs.show_log(f" Fuck Received : {received_spell}")
         return received_spell
 
     def Check_Enemy_or_familiar_Unit(self, world: World, unit: Unit, enemy_familiar: bool) -> bool:
@@ -116,7 +115,7 @@ class SpellHandler:
 # اسپل های محیطی با توجه ب نوعشون باید در بهترین مکان زده بشن مثلا اسپل محیطی سم ک برای دشمن زده میشه باید در مکانی زده بشه ک بیشترین دشمن در اونجا قرار داره
 # و بقیه اسپل ها هم همینطور
 
-    def GradeCell(self, units:List["Unit"]) -> int:
+    def Grade_Hp_Enemy_Cell(self, units:List["Unit"]) -> int:
         grad = 0
         for unit in units:
             if(unit.hp < 5):
@@ -126,7 +125,16 @@ class SpellHandler:
             else:
                 grad = grad+1
         return grad
-
+    def Grade_Hp_Allied_Cell(self, units:List["Unit"]) -> int:
+        grad = 0
+        for unit in units:
+            if(unit.base_unit.max_hp-unit.hp<=5):
+                grad = grad+4
+            elif(unit.base_unit.max_hp-unit.hp <= 10):
+                grad = grad+2
+            else:
+                grad = grad+1
+        return grad
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
         My_Player = world.get_me()
@@ -155,7 +163,7 @@ class SpellHandler:
 
                 target = world.get_area_spell_targets(
                     center=unit.cell, spell=received_spell)
-                grade_cell_temp = self.GradeCell(target)
+                grade_cell_temp = self.Grade_Hp_Enemy_Cell(target)
                 if(len(target) >= num_enemy_around_cell & grade_cell_temp >= grade_cell):
                     Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
                     num_enemy_around_cell = target.__len__()
@@ -174,7 +182,7 @@ class SpellHandler:
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
-                    grade_cell_temp = self.GradeCell(target)
+                    grade_cell_temp = self.Grade_Hp_Allied_Cell(target)
                     if (target.__len__() >= num_enemy_around_cell & grade_cell_temp > grade_cell):
                         Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
                         num_enemy_around_cell = target.__len__()
