@@ -1,6 +1,6 @@
 from typing import List
 
-from model import Logs, Path, Player
+from model import Logs, Path, Player, BaseUnit
 from world import World
 
 
@@ -8,12 +8,14 @@ class UnitHandler:
     def __init__(self):
         super().__init__()
 
-    def process(self, world: World) -> (List[Path], Player):
+    def process(self, world: World) -> List[Path]:
         """
         """
         paths_for_my_units = self.choose_path(world)
+        Logs.show_log(
+            f"choosen paths: {[path.id for path in paths_for_my_units]}")
         self.put_units(world, paths_for_my_units)
-        return paths_for_my_units, None
+        return paths_for_my_units
 
     def choose_path(self, world: World):
         """
@@ -37,7 +39,7 @@ class UnitHandler:
         """
         """
         myself = world.get_me()
-        range_factor = 1
+        range_factor = 2
         attack_factor = 4
         hp_factor = 1
         ap_factor = 4
@@ -51,7 +53,7 @@ class UnitHandler:
         hand = sorted(myself.hand, key=chooser)
         return hand, myself
 
-    def put_units(self, world: World, paths_for_my_units):
+    def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
         """
         hand, myself = self.choose_units(world)
@@ -59,7 +61,8 @@ class UnitHandler:
         for unit in reversed(hand):
             if unit.ap <= myself.ap:
                 myself.ap -= unit.ap
-                Logs.show_log(f"unit: {unit}\npath: {paths_for_my_units[0]}")
+                Logs.show_log(
+                    f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                 world.put_unit(base_unit=unit, path=paths_for_my_units[0])
 
     def friend_in_danger(self, world: World):
@@ -84,6 +87,8 @@ class UnitHandler:
     def in_danger(self, world: World):
         """
         """
+        if world.get_me().king.target_cell:
+            return True
         enemy_units = world.get_first_enemy().units
         enemy_units.extend(world.get_second_enemy().units)
         for path in world.get_me().paths_from_player:
