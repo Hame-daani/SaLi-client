@@ -191,13 +191,13 @@ class SpellHandler:
             elif(received_spell.type == SpellType.DUPLICATE):
                 # cell for Haste And Duolicate
                 num_enemy_around_cell = 0
-                distance_unit_to_select_enemy=0
+                distance_unit_to_select_enemy=1000000
 
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
                     targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
-                    if (target.__len__() > num_enemy_around_cell & targeted_cell_enemy>distance_unit_to_select_enemy ):
+                    if (target.__len__() > num_enemy_around_cell & targeted_cell_enemy<distance_unit_to_select_enemy ):
                         Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit} -- dist to enemy :{targeted_cell_enemy}")
                         distance_unit_to_select_enemy=targeted_cell_enemy
                         num_enemy_around_cell = target.__len__()
