@@ -187,6 +187,7 @@ class SpellHandler:
 
         elif(received_spell.target == SpellTarget.ALLIED):
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
+            Targets=[]
             if(received_spell.type == SpellType.HP):
                 num_enemy_around_cell = 3
                 grade_cell = 10
@@ -198,6 +199,7 @@ class SpellHandler:
                     if (len(target) >= num_enemy_around_cell and grade_cell_temp > grade_cell):
                         Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
                         num_enemy_around_cell = target.__len__()
+                        Targets=target
                         grade_cell = grade_cell_temp
                         Select_Cell = unit.cell
             elif(received_spell.type == SpellType.DUPLICATE):
@@ -213,6 +215,7 @@ class SpellHandler:
                         Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit} -- dist to enemy :{targeted_cell_enemy}")
                         distance_unit_to_select_enemy=targeted_cell_enemy
                         num_enemy_around_cell = target.__len__()
+                        Targets=target
                         Select_Cell = unit.cell
             else:
                 num_enemy_around_cell = 2
@@ -225,8 +228,11 @@ class SpellHandler:
                             f" Number arround : {len(target)}  --  Unit :{unit} ")
                         num_enemy_around_cell = target.__len__()
                         Select_Cell = unit.cell
+                        Targets = target
 
             Logs.show_log(f"target alied best select  :{Select_Cell}")
+            for uni in Targets:
+                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp}"))
 
         return Select_Cell
 
