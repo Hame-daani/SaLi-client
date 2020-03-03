@@ -320,6 +320,10 @@ class BaseUnit:
         return "<BaseUnit | " \
                "type id : {}>".format(self.type_id)
 
+    def __repr__(self):
+        return "<BaseUnit | " \
+               "type id : {}>".format(self.type_id)
+
 
 class King:
     center: Cell
