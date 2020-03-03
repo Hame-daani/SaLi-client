@@ -87,7 +87,7 @@ class UnitHandler:
                                     base_unit=unit, path=path)
                                 break  # put one unit
 
-        else:# one path
+        else:  # one path
             # reversed best are in the end
             for unit in reversed(hand):
                 if unit.ap <= myself.ap:
@@ -99,12 +99,21 @@ class UnitHandler:
     def friend_in_danger(self, world: World) -> Path:
         """
         """
-        # TODO: goes sooner maybe?
+        paths = world.get_friend().paths_from_player
         if world.get_friend().king.target_cell:
             target_cell = world.get_friend().king.target_cell
-            paths = world.get_friend().paths_from_player
             for path in paths:
                 if target_cell in path.cells:
+                    return path
+        else:
+            enemy_units = world.get_first_enemy().units
+            enemy_units.extend(world.get_second_enemy().units)
+            for path in paths:
+                # units in cell 8 => king.range+2
+                # to be perepared
+                cell_units = world.get_cell_units(path.cells[7])
+                cell_units.extend(world.get_cell_units(path.cells[6]))
+                if any(unit in cell_units for unit in enemy_units):
                     return path
         return None
 
