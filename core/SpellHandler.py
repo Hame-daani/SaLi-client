@@ -232,7 +232,7 @@ class SpellHandler:
 
             Logs.show_log(f"target alied best select  :{Select_Cell}")
             for uni in Targets:
-                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp}"))
+                Logs.show_log((f" my unit : {uni}  hp:{uni.hp}"))
 
         return Select_Cell
 
