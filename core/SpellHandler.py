@@ -127,9 +127,9 @@ class SpellHandler:
     def Grade_Hp_Enemy_Cell(self, units:List["Unit"]) -> int:
         grad = 0
         for unit in units:
-            if(unit.hp < 5):
+            if(unit.hp < 10):
                 grad = grad+4
-            elif(unit.hp < 10):
+            elif(unit.hp < 15):
                 grad = grad+2
             else:
                 grad = grad+1
@@ -137,10 +137,13 @@ class SpellHandler:
     def Grade_Hp_Allied_Cell(self, units:List["Unit"]) -> int:
         grad = 0
         for unit in units:
-            if(unit.base_unit.max_hp-unit.hp<=5):
-                grad = grad+4
-            elif(unit.base_unit.max_hp-unit.hp <= 10):
-                grad = grad+2
+            if(unit.hp>5):
+                 if(unit.base_unit.max_hp-unit.hp<=5):
+                     grad = grad+4
+                 elif(unit.base_unit.max_hp-unit.hp <= 10):
+                     grad = grad+2
+                 elif(unit.base_unit.max_hp-unit.hp <= 20):
+                     grad = grad + 1
         return grad
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
@@ -161,8 +164,8 @@ class SpellHandler:
         Select_Cell = None
 
         if(received_spell.target == SpellTarget.ENEMY):
-            num_enemy_around_cell = 0
-            grade_cell = 0
+            num_enemy_around_cell = 4
+            grade_cell = 5
             Targets=[]
             Logs.show_log(f"target enemy -> spell type : {received_spell.type}")
             # best cell for HP(Posion And Damage)
@@ -171,9 +174,10 @@ class SpellHandler:
                 target = world.get_area_spell_targets(
                     center=unit.cell, spell=received_spell)
                 grade_cell_temp = self.Grade_Hp_Enemy_Cell(target)
-                if(len(target) >= num_enemy_around_cell & grade_cell_temp >= grade_cell):
+                Logs.show_log(f"Grade:{grade_cell_temp} -- Unit num :{len(target)}")
+                if(len(target) >= num_enemy_around_cell and grade_cell_temp >= grade_cell):
                     Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
-                    num_enemy_around_cell = target.__len__()
+                    num_enemy_around_cell = len(target)
                     grade_cell = grade_cell_temp
                     Select_Cell = unit.cell
                     Targets=target
@@ -185,7 +189,7 @@ class SpellHandler:
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
             if(received_spell.type == SpellType.HP):
                 num_enemy_around_cell = 3
-                grade_cell = 5
+                grade_cell = 10
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
@@ -198,7 +202,7 @@ class SpellHandler:
                         Select_Cell = unit.cell
             elif(received_spell.type == SpellType.DUPLICATE):
                 # cell for Haste And Duolicate
-                num_enemy_around_cell = 0
+                num_enemy_around_cell = 3
                 distance_unit_to_select_enemy=1000000
 
                 for unit in All_units_own:
@@ -211,7 +215,7 @@ class SpellHandler:
                         num_enemy_around_cell = target.__len__()
                         Select_Cell = unit.cell
             else:
-                num_enemy_around_cell = 0
+                num_enemy_around_cell = 2
 
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
