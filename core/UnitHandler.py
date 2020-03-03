@@ -169,9 +169,11 @@ class UnitHandler:
             path for path in paths_from_me if path in paths_to_first_enemy]
         path_to_enemy.extend(
             [path for path in paths_from_me if path in paths_to_second_enemy])
-        path_for_my_units = min(path_to_enemy, key=lambda p: len(p.cells))
-        # TODO: multi path to enemy?
-        return [path_for_my_units]
+        min_path = min(path_to_enemy, key=lambda p: len(p.cells))
+        path_for_my_units = [
+            p for p in path_to_enemy if len(p.cells) == len(min_path.cells)
+        ]
+        return path_for_my_units
 
     def fucked_up(self, world: World):
         """
