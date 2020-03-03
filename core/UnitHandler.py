@@ -21,11 +21,12 @@ class UnitHandler:
         """
         choose path and put it in self.paths_for_my_nits
         """
-        if self.in_danger(world):
+        if self.fucked_up(world):
+            Logs.show_log(f"goes in delta mode.")
+            paths_for_my_units = self.delta_mode(world)
+        elif self.in_danger(world):
             Logs.show_log(f"goes in defense mode.")
             paths_for_my_units = self.defense_mode(world)
-        # elif len(paths_for_my_units) > 1:  # friend died!
-        #     self.delta_mode(world, paths_for_my_units)
         elif self.friend_in_danger(world):
             Logs.show_log(f"goes in allied mode.")
             paths_for_my_units = self.allied_mode(world)
@@ -57,14 +58,43 @@ class UnitHandler:
         """
         """
         hand, myself = self.choose_units(world)
-        # reversed
-        # TODO: put units in multi path
-        for unit in reversed(hand):
-            if unit.ap <= myself.ap:
-                myself.ap -= unit.ap
-                Logs.show_log(
-                    f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
-                world.put_unit(base_unit=unit, path=paths_for_my_units[0])
+        # multi path
+        if len(paths_for_my_units) > 1:
+            hand.sort(key=lambda u: u.ap)
+            its_odd_turn = world.get_current_turn() % 2
+            if its_odd_turn:
+                for i, path in enumerate(paths_for_my_units):
+                    if i % 2:
+                        for unit in hand:
+                            if unit.ap <= myself.ap:
+                                myself.ap -= unit.ap
+                                Logs.show_log(
+                                    f"unit: {unit.type_id} in path: {path.id}")
+                                world.put_unit(
+                                    base_unit=unit, path=path)
+                                break  # put one unit
+                    else:  # even path
+                        continue
+            else:  # even turn
+                for i, path in enumerate(paths_for_my_units):
+                    if not i % 2:
+                        for unit in hand:
+                            if unit.ap <= myself.ap:
+                                myself.ap -= unit.ap
+                                Logs.show_log(
+                                    f"unit: {unit.type_id} in path: {path.id}")
+                                world.put_unit(
+                                    base_unit=unit, path=path)
+                                break  # put one unit
+
+        else:# one path
+            # reversed best are in the end
+            for unit in reversed(hand):
+                if unit.ap <= myself.ap:
+                    myself.ap -= unit.ap
+                    Logs.show_log(
+                        f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
+                    world.put_unit(base_unit=unit, path=paths_for_my_units[0])
 
     def friend_in_danger(self, world: World) -> Path:
         """
@@ -99,8 +129,8 @@ class UnitHandler:
             for path in paths:
                 # units in cell 8 => king.range+2
                 # to be perepared
-                # TODO: danger zone move forward
-                cell_units = world.get_cell_units(path.cells[7])
+                cell_units = world.get_cell_units(path.cells[8])
+                cell_units.extend(world.get_cell_units(path.cells[7]))
                 cell_units.extend(world.get_cell_units(path.cells[6]))
                 if any(unit in cell_units for unit in enemy_units):
                     return path
@@ -134,8 +164,17 @@ class UnitHandler:
         # TODO: multi path to enemy?
         return [path_for_my_units]
 
-    def delta_mode(self, world: World, paths_for_my_units):
-        """"""
-        # TODO: build delta mode
-        # TODO: friend path and defense path
-        pass
+    def fucked_up(self, world: World):
+        """
+        """
+        return not world.get_friend().is_alive()
+
+    def delta_mode(self, world: World):
+        """
+        """
+        paths = []
+        paths.append(world.get_friend().paths_from_player[0])
+        my_path = self.in_danger(world)
+        if my_path:
+            paths.append(my_path)
+        return paths
