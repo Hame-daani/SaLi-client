@@ -58,6 +58,7 @@ class UnitHandler:
         """
         hand, myself = self.choose_units(world)
         # reversed
+        # TODO: put units in multi path
         for unit in reversed(hand):
             if unit.ap <= myself.ap:
                 myself.ap -= unit.ap
@@ -65,63 +66,50 @@ class UnitHandler:
                     f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                 world.put_unit(base_unit=unit, path=paths_for_my_units[0])
 
-    def friend_in_danger(self, world: World):
+    def friend_in_danger(self, world: World) -> Path:
         """
         """
+        # TODO: goes sooner maybe?
         if world.get_friend().king.target_cell:
-            return True
-        return False
+            target_cell = world.get_friend().king.target_cell
+            paths = world.get_friend().paths_from_player
+            for path in paths:
+                if target_cell in path.cells:
+                    return path
+        return None
 
     def allied_mode(self, world: World):
         """
         """
-        target_cell = world.get_friend().king.target_cell
-        paths = world.get_friend().paths_from_player
-        target_path = None
-        for path in paths:
-            if target_cell in path.cells:
-                target_path = path
-                break
+        target_path = self.friend_in_danger(world)
         return [target_path]
 
-    def in_danger(self, world: World):
+    def in_danger(self, world: World) -> Path:
         """
         """
+        paths = world.get_me().paths_from_player
         if world.get_me().king.target_cell:
-            return True
-        enemy_units = world.get_first_enemy().units
-        enemy_units.extend(world.get_second_enemy().units)
-        for path in world.get_me().paths_from_player:
-            # units in cell 8 => king.range+2
-            # to be perepared
-            cell_units = world.get_cell_units(path.cells[7])
-            cell_units.extend(world.get_cell_units(path.cells[6]))
-            if any(unit in cell_units for unit in enemy_units):
-                return True
-        return False
+            target_cell = world.get_me().king.target_cell
+            for path in paths:
+                if target_cell in path.cells:
+                    return path
+        else:
+            enemy_units = world.get_first_enemy().units
+            enemy_units.extend(world.get_second_enemy().units)
+            for path in paths:
+                # units in cell 8 => king.range+2
+                # to be perepared
+                # TODO: danger zone move forward
+                cell_units = world.get_cell_units(path.cells[7])
+                cell_units.extend(world.get_cell_units(path.cells[6]))
+                if any(unit in cell_units for unit in enemy_units):
+                    return path
+        return None
 
     def defense_mode(self, world: World):
         """
         """
-        target_cell = world.get_me().king.target_cell
-        if not target_cell:
-            enemy_units = world.get_first_enemy().units
-            enemy_units.extend(world.get_second_enemy().units)
-            for path in world.get_me().paths_from_player:
-                # units in cell 7 and 8 => king.range+2
-                # to be perepared
-                cell_units = world.get_cell_units(path.cells[7])
-                cell_units.extend(world.get_cell_units(path.cells[6]))
-                if any(unit in cell_units for unit in enemy_units):
-                    target_path = path
-                    break
-        else:
-            paths = world.get_me().paths_from_player
-            target_path = None
-            for path in paths:
-                if target_cell in path.cells:
-                    target_path = path
-                    break
+        target_path = self.in_danger(world)
         return [target_path]
 
     def attack_mode(self, world: World):
@@ -143,8 +131,11 @@ class UnitHandler:
         path_to_enemy.extend(
             [path for path in paths_from_me if path in paths_to_second_enemy])
         path_for_my_units = min(path_to_enemy, key=lambda p: len(p.cells))
+        # TODO: multi path to enemy?
         return [path_for_my_units]
 
     def delta_mode(self, world: World, paths_for_my_units):
         """"""
+        # TODO: build delta mode
+        # TODO: friend path and defense path
         pass
