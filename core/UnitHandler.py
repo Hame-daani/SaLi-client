@@ -113,8 +113,7 @@ class UnitHandler:
                 # to be perepared
                 king_range = world.get_friend().king.range
                 Logs.show_log(f"friend king range: {king_range}")
-                cell_units = world.get_cell_units(path.cells[king_range+1])
-                cell_units.extend(world.get_cell_units(path.cells[king_range]))
+                cell_units = world.get_cell_units(path.cells[king_range])
                 if any(unit in cell_units for unit in enemy_units):
                     return path
         return None
@@ -142,7 +141,9 @@ class UnitHandler:
                 # to be perepared
                 king_range = world.get_me().king.range
                 Logs.show_log(f"my king range: {king_range}")
-                cell_units = world.get_cell_units(path.cells[king_range+2])
+                cell_units = world.get_cell_units(path.cells[king_range+3])
+                cell_units.extend(world.get_cell_units(
+                    path.cells[king_range+2]))
                 cell_units.extend(world.get_cell_units(
                     path.cells[king_range+1]))
                 cell_units.extend(world.get_cell_units(path.cells[king_range]))

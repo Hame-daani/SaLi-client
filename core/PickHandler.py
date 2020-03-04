@@ -14,7 +14,6 @@ class PickHandler:
 
     def pick(self, world: World):
         # pre process
-        myself = world.get_me()
         range_factor = 2
         attack_factor = 4
         hp_factor = 1
