@@ -95,6 +95,7 @@ class UnitHandler:
                     Logs.show_log(
                         f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
+                    break # one unit per turn
 
     def friend_in_danger(self, world: World) -> Path:
         """
@@ -141,7 +142,9 @@ class UnitHandler:
                 # to be perepared
                 king_range = world.get_me().king.range
                 Logs.show_log(f"my king range: {king_range}")
-                cell_units = world.get_cell_units(path.cells[king_range+3])
+                cell_units = world.get_cell_units(path.cells[king_range+4])
+                cell_units.extend(world.get_cell_units(
+                    path.cells[king_range+3]))
                 cell_units.extend(world.get_cell_units(
                     path.cells[king_range+2]))
                 cell_units.extend(world.get_cell_units(
