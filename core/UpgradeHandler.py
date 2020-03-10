@@ -25,22 +25,20 @@ class UpgradeHandler:
         unit = None
 
         if world.get_range_upgrade_number() is not 0 or world.get_damage_upgrade_number() is not 0:
-            Logs.show_log(f"have upgrade.")
-            Logs.show_log(f"range :{world.get_range_upgrade_number()}")
-            Logs.show_log(f"damage :{world.get_damage_upgrade_number()}")
+          Logs.show_log(f"have upgrade.")
+          Logs.show_log(f"range :{world.get_range_upgrade_number()}")
+          Logs.show_log(f"damage :{world.get_damage_upgrade_number()}")
 
-            if len(my_units) > 0:
-                for _unit in my_units:
-                   if(_unit.range>1):
-                        temp_grade = _unit.hp + _unit.attack*2+_unit.range*3
-                        if (temp_grade > Grade_Upgrade):
-                             Grade_Upgrade = temp_grade
-                             unit = _unit
-                if(unit is not None):
-                   Logs.show_log(f"my  unit :{unit}")
-                   world.upgrade_unit_range(unit=unit)
-                   world.upgrade_unit_damage(unit=unit)
-                   Logs.show_log(f"my unit upgrade-> damage level:{unit.damage_level}  range :{unit.range_level}")
-
-
-
+          if len(my_units) > 0:
+              for _unit in my_units:
+                 if(_unit.range>1):
+                      temp_grade = _unit.hp + _unit.attack*2+_unit.range*3
+                      if (temp_grade > Grade_Upgrade):
+                           Grade_Upgrade = temp_grade
+                           unit = _unit
+              if(unit is not None):
+                  for i in range(0,2):
+                    Logs.show_log(f"my  unit :{unit}")
+                    world.upgrade_unit_range(unit=unit)
+                    world.upgrade_unit_damage(unit=unit)
+                    Logs.show_log(f"my unit upgrade-> damage level:{unit.damage_level} range :{unit.range_level}")

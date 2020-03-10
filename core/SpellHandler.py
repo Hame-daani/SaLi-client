@@ -32,9 +32,9 @@ class SpellHandler:
             else:  # if is unit spell
               received_spell =  self.put_unit_spell(world,received_spell)
         for spell in self._splls_:
-           # Logs.show_log(f" 0(*_._*)0 Spell list 0(*_._*)0 :{spell}")
+            Logs.show_log(f" 0(*_._*)0 Spell list 0(*_._*)0 :{spell}")
             cast_spell = spell
-            #Logs.show_log(f"spell {cast_spell.type} cast.")
+            Logs.show_log(f"spell {cast_spell.type} cast.")
             if cast_spell.is_area_spell():
                 cast_spell = self.put_area_spell(cast_spell, world)
             else:  # if is unit spell
@@ -137,102 +137,106 @@ class SpellHandler:
     def Grade_Hp_Allied_Cell(self, units:List["Unit"]) -> int:
         grad = 0
         for unit in units:
-            if(unit.hp>5):
-                 if(unit.base_unit.max_hp-unit.hp<=5):
-                     grad = grad+4
-                 elif(unit.base_unit.max_hp-unit.hp <= 10):
+            hp = unit.base_unit.max_hp - unit.hp
+            if(unit.hp>3 and hp>3):
+                 if(hp <=5):
+                     grad = grad+1
+                 elif(hp <= 10):
                      grad = grad+2
-                 elif(unit.base_unit.max_hp-unit.hp <= 20):
-                     grad = grad + 1
+                 elif(hp <= 20):
+                     grad = grad +4
         return grad
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
         My_Player = world.get_me()
-        My_First_Enemy = world.get_first_enemy()
-        My_Second_Enemy = world.get_second_enemy()
-        My_Freind = world.get_friend()
+        My_First_Enemy = self.Targeted_enemy(world)
+        #My_Second_Enemy = world.get_second_enemy()
+        #My_Freind = world.get_friend()
         # ------------------------------
 
         All_units_own = My_Player.units
         All_units_enemy = My_First_Enemy.units
-
-        for unit in My_Freind.units:
+        #all unit ->path unit
+        """for unit in My_Freind.units:
             All_units_own.append(unit)
         for unit in My_Second_Enemy.units:
-            All_units_enemy.append(unit)
+            All_units_enemy.append(unit)"""
         # --------------------------------
         Select_Cell = None
 
         if(received_spell.target == SpellTarget.ENEMY):
-            num_enemy_around_cell = 4
+            num_enemy_around_cell = 3
             grade_cell = 5
             Targets=[]
-            #Logs.show_log(f"target enemy -> spell type : {received_spell.type}")
-            # best cell for HP(Posion And Damage)
-            for unit in All_units_enemy:
+            Logs.show_log(f"target enemy -> spell type : {received_spell.type}")
+            #best cell for HP(Posion And Damage)
+            for unit in self.paths_for_my_units[0].cells:
 
                 target = world.get_area_spell_targets(
-                    center=unit.cell, spell=received_spell)
+                    center=unit, spell=received_spell)
                 grade_cell_temp = self.Grade_Hp_Enemy_Cell(target)
-                #Logs.show_log(f"Grade:{grade_cell_temp} -- Unit num :{len(target)}")
+                Logs.show_log(f"Grade:{grade_cell_temp} -- Unit num :{len(target)}")
                 if(len(target) >= num_enemy_around_cell and grade_cell_temp >= grade_cell):
-                   # Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
+                    Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
                     num_enemy_around_cell = len(target)
                     grade_cell = grade_cell_temp
-                    Select_Cell = unit.cell
+                    Select_Cell = unit
                     Targets=target
-            #Logs.show_log(f"Target cell :{Select_Cell}")
-            #for uni in Targets:
-                #Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp}"))
+            Logs.show_log(f"Target cell :{Select_Cell}")
+            for uni in Targets:
+                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp}"))
 
         elif(received_spell.target == SpellTarget.ALLIED):
-            #Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
+            Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
             Targets=[]
             if(received_spell.type == SpellType.HP):
                 num_enemy_around_cell = 3
-                grade_cell = 10
-                for unit in All_units_own:
+                grade_cell = 4
+                for unit in self.paths_for_my_units[0].cells:
                     target = world.get_area_spell_targets(
-                        center=unit.cell, spell=received_spell)
+                        center=unit, spell=received_spell)
                     grade_cell_temp = self.Grade_Hp_Allied_Cell(target)
-                    #Logs.show_log(f" hp -> {grade_cell_temp} - > num unit : {len(target)}")
+                    Logs.show_log(f" hp -> {grade_cell_temp} - > num unit : {len(target)}")
                     if (len(target) >= num_enemy_around_cell and grade_cell_temp > grade_cell):
-                        #Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
-                        num_enemy_around_cell = target.__len__()
+                        Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
+                        num_enemy_around_cell = len(target)
                         Targets=target
                         grade_cell = grade_cell_temp
-                        Select_Cell = unit.cell
+                        Select_Cell = unit
             elif(received_spell.type == SpellType.DUPLICATE):
                 # cell for Haste And Duolicate
                 num_enemy_around_cell = 3
                 distance_unit_to_select_enemy=1000000
 
-                for unit in All_units_own:
+                for unit in self.paths_for_my_units[0].cells:
                     target = world.get_area_spell_targets(
-                        center=unit.cell, spell=received_spell)
-                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
-                    if (target.__len__() > num_enemy_around_cell & targeted_cell_enemy<distance_unit_to_select_enemy ):
-                        #Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit} -- dist to enemy :{targeted_cell_enemy}")
+                        center=unit, spell=received_spell)
+                    targeted_cell_enemy=self.Manhatan_Distance(unit,self.targeted_enemy.king.center)
+                    Logs.show_log(f" DUPLICATE Number arround : {len(target)} "
+                                  f" -- dist to enemy :{targeted_cell_enemy}")
+                    if (len(target) >= num_enemy_around_cell and targeted_cell_enemy<distance_unit_to_select_enemy ):
+                        Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit}"
+                                      f" -- dist to enemy :{targeted_cell_enemy}")
                         distance_unit_to_select_enemy=targeted_cell_enemy
-                        num_enemy_around_cell = target.__len__()
+                        num_enemy_around_cell = len(target)
                         Targets=target
-                        Select_Cell = unit.cell
+                        Select_Cell = unit
             else:
                 num_enemy_around_cell = 2
 
-                for unit in All_units_own:
+                for unit in self.paths_for_my_units[0].cells:
                     target = world.get_area_spell_targets(
-                        center=unit.cell, spell=received_spell)
-                    if (target.__len__() > num_enemy_around_cell ):
-                        #Logs.show_log(
-                            #f" Number arround : {len(target)}  --  Unit :{unit} ")
-                        num_enemy_around_cell = target.__len__()
-                        Select_Cell = unit.cell
+                        center=unit, spell=received_spell)
+                    if (len(target) > num_enemy_around_cell ):
+                        Logs.show_log(
+                            f" Number arround : {len(target)}  --  Unit :{unit} ")
+                        num_enemy_around_cell = len(target)
+                        Select_Cell = unit
                         Targets = target
 
-            #Logs.show_log(f"target alied best select  :{Select_Cell}")
-            #for uni in Targets:
-               # Logs.show_log((f" my unit : {uni}  hp:{uni.hp}"))
+            Logs.show_log(f"target alied best select  :{Select_Cell}")
+            for uni in Targets:
+                Logs.show_log((f" my unit : {uni}  hp:{uni.hp}"))
 
         return Select_Cell
 
@@ -264,8 +268,8 @@ class SpellHandler:
             path = my_paths[random.randint(0, len(my_paths) - 1)]
             size = len(path.cells)
             cell = path.cells[int((size - 1) / 2)]
-            #Logs.show_log(f"target Self -> spell type : {received_spell.type}")
-            #Logs.show_log(f"unit : {unit}  unit cell : {unit.cell}  cell : {cell}")
+            Logs.show_log(f"target Self -> spell type : {received_spell.type}")
+            Logs.show_log(f"unit : {unit}  unit cell : {unit.cell}  cell : {cell}")
             world.cast_unit_spell(
                 unit=unit, path=path, cell=cell, spell=received_spell)
             received_spell=None
