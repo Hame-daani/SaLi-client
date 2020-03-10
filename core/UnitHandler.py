@@ -1,6 +1,6 @@
 from typing import List
 
-from model import Logs, Path, Player, BaseUnit
+from model import Logs, Path, Player, BaseUnit, Unit
 from world import World
 
 
@@ -22,15 +22,15 @@ class UnitHandler:
         """
         choose path and put it in self.paths_for_my_nits
         """
-        if self.fucked_up(world):
-            Logs.show_log(f"goes in delta mode.")
-            paths_for_my_units = self.delta_mode(world)
-        elif self.in_danger(world):
+        # if self.fucked_up(world):
+        #     Logs.show_log(f"goes in delta mode.")
+        #     paths_for_my_units = self.delta_mode(world)
+        if self.in_danger(world):
             Logs.show_log(f"goes in defense mode.")
             paths_for_my_units = self.defense_mode(world)
-        elif self.friend_in_danger(world):
-            Logs.show_log(f"goes in allied mode.")
-            paths_for_my_units = self.allied_mode(world)
+        # elif self.friend_in_danger(world):
+        #     Logs.show_log(f"goes in allied mode.")
+        #     paths_for_my_units = self.allied_mode(world)
         else:
 
             Logs.show_log(f"goes in attack mode.")
@@ -48,6 +48,10 @@ class UnitHandler:
         """
         """
         hand, myself = self.choose_units(world)
+        if self.in_danger(world):
+            danger = True
+        else:
+            danger = False
         # multi path
         if len(paths_for_my_units) > 1:
             hand.sort(key=lambda u: u.ap)
@@ -78,19 +82,26 @@ class UnitHandler:
                                 break  # put one unit
 
         else:  # one path
+            i = 0
             # reversed best are in the end
             for unit in reversed(hand):
                 if unit.ap <= myself.ap:
+                    i += 1
                     myself.ap -= unit.ap
                     Logs.show_log(
                         f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
-                    break  # one unit per turn
+                    if i == 2:
+                        break  # one unit per turn
 
     def friend_in_danger(self, world: World) -> Path:
         """
         """
         paths = world.get_friend().paths_from_player
+        units = world.get_me().units
+        if any(unit.target_if_king for unit in units):
+            return None
+
         if world.get_friend().king.target_cell:
             target_cell = world.get_friend().king.target_cell
             for path in paths:
@@ -121,6 +132,7 @@ class UnitHandler:
         paths = world.get_me().paths_from_player
         if world.get_me().king.target_cell:
             target_cell = world.get_me().king.target_cell
+            Logs.show_log(f"king under danger {target_cell}")
             for path in paths:
                 if target_cell in path.cells:
                     return path
