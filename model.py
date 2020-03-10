@@ -1,6 +1,4 @@
-import copy
 from enum import Enum
-
 from typing import *
 
 
@@ -58,8 +56,7 @@ class Player:
     spells: List["Spell"]
     range_upgraded_unit: Optional["Unit"]
     damage_upgraded_unit: Optional["Unit"]
-
-    _spells_dict: Dict[int, int] = {}
+    _spells_dict: Dict[int, int]
 
     def __init__(self, player_id: int, deck: List["BaseUnit"], hand: List["BaseUnit"], ap: int, king: "King",
                  paths_from_player: List["Path"], path_to_friend: "Path", units: List["Unit"],
@@ -84,6 +81,7 @@ class Player:
         self.spells = spells
         self.range_upgraded_unit = range_upgraded_unit  # unit that last turn the player upgraded range of it
         self.damage_upgraded_unit = damage_upgraded_unit  # unit that last turn the player upgraded damage of it
+        self._spells_dict = {}
 
     def is_alive(self) -> bool:
         return self.king.is_alive
