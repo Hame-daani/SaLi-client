@@ -208,10 +208,10 @@ class SpellHandler:
                 num_enemy_around_cell = 3
                 distance_unit_to_select_enemy=1000000
 
-                for unit in self.paths_for_my_units[0].cells:
+                for unit in All_units_own:
                     target = world.get_area_spell_targets(
-                        center=unit, spell=received_spell)
-                    targeted_cell_enemy=self.Manhatan_Distance(unit,self.targeted_enemy.king.center)
+                        center=unit.cell, spell=received_spell)
+                    targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
                     Logs.show_log(f" DUPLICATE Number arround : {len(target)} "
                                   f" -- dist to enemy :{targeted_cell_enemy}")
                     if (len(target) >= num_enemy_around_cell and targeted_cell_enemy<distance_unit_to_select_enemy ):
@@ -220,18 +220,19 @@ class SpellHandler:
                         distance_unit_to_select_enemy=targeted_cell_enemy
                         num_enemy_around_cell = len(target)
                         Targets=target
-                        Select_Cell = unit
+                        Select_Cell = unit.cell
             else:
                 num_enemy_around_cell = 2
-
-                for unit in self.paths_for_my_units[0].cells:
+                for unit in All_units_own:
                     target = world.get_area_spell_targets(
-                        center=unit, spell=received_spell)
+                        center=unit.cell, spell=received_spell)
+                    Logs.show_log(
+                        f" Haste Number arround : {len(target)}  --  Unit :{unit} ")
                     if (len(target) > num_enemy_around_cell ):
                         Logs.show_log(
-                            f" Number arround : {len(target)}  --  Unit :{unit} ")
+                            f"its ok Haste Number arround : {len(target)}  --  Unit :{unit} ")
                         num_enemy_around_cell = len(target)
-                        Select_Cell = unit
+                        Select_Cell = unit.cell
                         Targets = target
 
             Logs.show_log(f"target alied best select  :{Select_Cell}")
