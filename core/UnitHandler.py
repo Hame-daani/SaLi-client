@@ -41,13 +41,18 @@ class UnitHandler:
         """
         """
         myself = world.get_me()
-        hand = sorted(myself.hand, key=self.pick_handler.chooser)
+        if self.in_danger(world):
+            hand = sorted(myself.hand, key=lambda u: (
+                u.base_range*4)+u.base_attack)
+        else:
+            hand = sorted(myself.hand, key=lambda u: 1/u.ap)
         return hand, myself
 
     def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
         """
         hand, myself = self.choose_units(world)
+        Logs.show_log(f"my hand:{[u.type_id for u in hand]}")
         # multi path
         if len(paths_for_my_units) > 1:
             hand.sort(key=lambda u: u.ap)
