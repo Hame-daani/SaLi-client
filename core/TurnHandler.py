@@ -28,7 +28,7 @@ class TurnHandler:
         """
         """
         # Process Unit Puting
-        self.unit_handler = UnitHandler()
+        self.unit_handler = UnitHandler(pick_handler=self.pick_handler)
         self.paths_for_my_units = self.unit_handler.process(world)
 
         # Process Spell Puting

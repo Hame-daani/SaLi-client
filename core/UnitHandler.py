@@ -5,8 +5,9 @@ from world import World
 
 
 class UnitHandler:
-    def __init__(self):
+    def __init__(self, pick_handler):
         super().__init__()
+        self.pick_handler = pick_handler
 
     def process(self, world: World) -> List[Path]:
         """
@@ -40,18 +41,7 @@ class UnitHandler:
         """
         """
         myself = world.get_me()
-        range_factor = 2
-        attack_factor = 4
-        hp_factor = 1
-        ap_factor = 4
-        ###########
-
-        def chooser(unit): return (
-            (unit.base_range*range_factor) +
-            (unit.base_attack*attack_factor) +
-            (unit.max_hp*hp_factor))/3 - (unit.ap*ap_factor)
-        ###########
-        hand = sorted(myself.hand, key=chooser)
+        hand = sorted(myself.hand, key=self.pick_handler.chooser)
         return hand, myself
 
     def put_units(self, world: World, paths_for_my_units: List[Path]):
@@ -95,7 +85,7 @@ class UnitHandler:
                     Logs.show_log(
                         f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
-                    break # one unit per turn
+                    break  # one unit per turn
 
     def friend_in_danger(self, world: World) -> Path:
         """
