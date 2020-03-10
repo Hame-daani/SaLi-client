@@ -48,10 +48,6 @@ class UnitHandler:
         """
         """
         hand, myself = self.choose_units(world)
-        if self.in_danger(world):
-            danger = True
-        else:
-            danger = False
         # multi path
         if len(paths_for_my_units) > 1:
             hand.sort(key=lambda u: u.ap)
@@ -184,6 +180,10 @@ class UnitHandler:
         path_for_my_units = [
             p for p in path_to_enemy if len(p.cells) == len(min_path.cells)
         ]
+        friend_units = world.get_friend().units
+        my_id = world.get_me().player_id
+        if friend_units and (my_id == 1 or my_id == 2):
+            path_for_my_units.append(friend_units[-1].path)
         return path_for_my_units
 
     def fucked_up(self, world: World):
