@@ -78,16 +78,15 @@ class UnitHandler:
                                 break  # put one unit
 
         else:  # one path
-            i = 0
             # reversed best are in the end
             for unit in reversed(hand):
                 if unit.ap <= myself.ap:
-                    i += 1
                     myself.ap -= unit.ap
                     Logs.show_log(
                         f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
-                    if i == 2:
+                    turn = world.get_current_turn()
+                    if turn != 1:
                         break  # one unit per turn
 
     def friend_in_danger(self, world: World) -> Path:
@@ -180,10 +179,6 @@ class UnitHandler:
         path_for_my_units = [
             p for p in path_to_enemy if len(p.cells) == len(min_path.cells)
         ]
-        friend_units = world.get_friend().units
-        my_id = world.get_me().player_id
-        if friend_units and (my_id == 1 or my_id == 2):
-            path_for_my_units.append(friend_units[-1].path)
         return path_for_my_units
 
     def fucked_up(self, world: World):
