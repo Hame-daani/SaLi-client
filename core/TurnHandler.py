@@ -39,5 +39,5 @@ class TurnHandler:
             self.spells.append(spell)
 
         # Process Upgrades
-        self.upgrade_handler = UpgradeHandler()
+        self.upgrade_handler = UpgradeHandler(paths_for_my_units=self.paths_for_my_units)
         self.upgrade_handler.process(world)
