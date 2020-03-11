@@ -225,7 +225,8 @@ class SpellHandler:
             Targets=[]
             if(received_spell.type == SpellType.HP):
                 if(self.unit_handler.special_unit is not None):
-                    if(self.unit_handler.special_unit.hp<self.unit_handler.special_unit.base_unit.max_hp):
+                    Logs.show_log(f"special unit hp :{self.unit_handler.special_unit.hp}")
+                    if(self.unit_handler.special_unit.hp<15):
                         Logs.show_log(f"hp in my special Unit -> unit hp : {self.unit_handler.special_unit.hp}")
                         return self.unit_handler.special_unit.cell
                 num_enemy_around_cell = 0
