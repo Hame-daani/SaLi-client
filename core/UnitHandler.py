@@ -84,10 +84,30 @@ class UnitHandler:
         hand = sorted(myself.hand, key=self.pick_handler.chooser)
         return hand, myself
 
+    def two_by_two_mode(self, world: World):
+        if world.get_current_turn() % 2 == 0:
+            i = 0
+            myself = world.get_me()
+            hand = myself.hand
+            hand.sort(key=lambda u: u.ap)
+            for unit in hand:
+                if i == 2:
+                    return
+                if unit.ap <= myself.ap:
+                    myself.ap -= unit.ap
+                    Logs.show_log(
+                        f"unit: {unit.type_id} in path: {self.paths_for_my_units[0].id}")
+                    world.put_unit(
+                        base_unit=unit, path=self.paths_for_my_units[0])
+                    i += 1
+
     def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
         """
         hand, myself = self.choose_units(world)
+        if world.get_current_turn() < 10:
+            self.two_by_two_mode(world)
+            return
         # multi path
         if len(paths_for_my_units) > 1:
             Logs.show_log(f"try to put in multi path")
@@ -121,11 +141,12 @@ class UnitHandler:
         else:  # one path
             # special case
             if self.put_special:
-                last_unit = world.get_me().units[-1]
-                self.special_unit = last_unit
-                self.put_special = False
-                Logs.show_log(
-                    f" we have special unit now {self.special_unit.unit_id}")
+                if world.get_me().units:
+                    last_unit = world.get_me().units[-1]
+                    self.special_unit = last_unit
+                    self.put_special = False
+                    Logs.show_log(
+                        f" we have special unit now {self.special_unit.unit_id}")
 
             if self.in_delta_mode(world) and not self.special_unit:
                 Logs.show_log(f"in delta mode")
