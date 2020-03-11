@@ -46,7 +46,11 @@ class UnitHandler:
             f"range upgrades number {world.get_range_upgrade_number()}")
         Logs.show_log(
             f"damage upgrades number {world.get_damage_upgrade_number()}")
-        return world.get_range_upgrade_number() >= 2 and world.get_damage_upgrade_number() >= 1
+        option1 = world.get_range_upgrade_number(
+        ) >= 2 and world.get_damage_upgrade_number() >= 1
+        option2 = world.get_range_upgrade_number(
+        ) >= 1 and world.get_damage_upgrade_number() >= 4
+        return option1 or option2
 
     def iam_helper(self, world: World):
         units = world.get_me().units
@@ -125,7 +129,7 @@ class UnitHandler:
             if self.in_delta_mode(world) and not self.special_unit:
                 Logs.show_log(f"in delta mode")
                 for u in hand:
-                    if u.type_id == 1 or u.type_id == 6:
+                    if u.type_id == 0:
                         Logs.show_log(f" found a unit")
                         if u.ap <= myself.ap:
                             paths = self.attack_mode(world)
@@ -133,11 +137,11 @@ class UnitHandler:
                                 f"units before put: {[unit.base_unit.type_id for unit in world.get_me().units]}")
                             world.put_unit(base_unit=u, path=paths[0])
                             self.put_special = True
-                            break
+                            return
                         else:
                             Logs.show_log(f"not enough ap {myself.ap}")
                             return
-                if not self.special_unit:
+                if not self.put_special:
                     Logs.show_log(
                         f" not found a unit {[u.type_id for u in hand]}")
             # end of special case
@@ -150,6 +154,7 @@ class UnitHandler:
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
                     turn = world.get_current_turn()
                     if turn != 1:
+                        # TODO send 2 by 2
                         return  # one unit per turn
             Logs.show_log(f"put no unit.")
 
