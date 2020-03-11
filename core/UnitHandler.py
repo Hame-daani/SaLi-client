@@ -166,7 +166,14 @@ class UnitHandler:
             for path in paths:
                 if target_cell in path.cells:
                     return path
-        # TODO: when we are under attack
+        else:
+            units = world.get_first_enemy().units + world.get_second_enemy().units
+            for unit in units:
+                if unit.target_if_king == world.get_me().king:
+                    for path in paths:
+                        if unit.cell in path.cells:
+                            return path
+
         return None
 
     def defense_mode(self, world: World):
