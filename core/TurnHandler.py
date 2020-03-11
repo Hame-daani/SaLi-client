@@ -18,29 +18,24 @@ class TurnHandler:
         """
         super().__init__()
         self.pick_handler = pick_handler
-        self.paths_for_my_units: List[Path] = None
-        self.unit_handler: UnitHandler = None
+        self.unit_handler = UnitHandler(pick_handler=self.pick_handler)
         self.spell_handler: SpellHandler = None
         self.upgrade_handler: UpgradeHandler = None
         self.spells: List[Spell] = []
-        self.special_unit: Unit = None
 
     def turn(self, world: World):
         """
         """
         # Process Unit Puting
-        self.unit_handler = UnitHandler(
-            pick_handler=self.pick_handler, special_unit=self.special_unit)
-        self.paths_for_my_units, self.special_unit = self.unit_handler.process(
-            world)
+        self.unit_handler.process(world)
 
         # Process Spell Puting
         self.spell_handler = SpellHandler(
-            paths_for_my_units=self.paths_for_my_units, splls=self.spells)
+            unit_handler=self.unit_handler, splls=self.spells)
         spell = self.spell_handler.process(world)
         if spell:
             self.spells.append(spell)
 
         # Process Upgrades
-        self.upgrade_handler = UpgradeHandler(paths_for_my_units=self.paths_for_my_units,special_unit=self.special_unit)
+        self.upgrade_handler = UpgradeHandler(unit_handler=self.unit_handler)
         self.upgrade_handler.process(world)

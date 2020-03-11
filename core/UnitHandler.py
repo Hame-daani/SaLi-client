@@ -6,19 +6,24 @@ from core.PickHandler import PickHandler
 
 
 class UnitHandler:
-    def __init__(self, pick_handler: PickHandler, special_unit: Unit):
+    def __init__(self, pick_handler: PickHandler):
         super().__init__()
         self.pick_handler = pick_handler
-        self.special_unit = special_unit
+        self.special_unit: Unit = None
+        self.paths_for_my_units: List[Path] = None
+        self.put_special = False
 
-    def process(self, world: World) -> List[Path]:
+    def process(self, world: World):
         """
         """
+        if self.special_unit:
+            Logs.show_log(
+                f" we have special unit now {self.special_unit.unit_id}")
         paths_for_my_units = self.choose_path(world)
         Logs.show_log(
             f"choosen paths: {[path.id for path in paths_for_my_units]}")
         self.put_units(world, paths_for_my_units)
-        return paths_for_my_units, self.special_unit
+        self.paths_for_my_units = paths_for_my_units
 
     def choose_path(self, world: World):
         """
@@ -36,8 +41,12 @@ class UnitHandler:
         return paths_for_my_units
 
     def in_delta_mode(self, world: World):
-        Logs.show_log(f"upgrades number {world.get_range_upgrade_number()}")
-        return world.get_range_upgrade_number() >= 3
+        Logs.show_log(f"check for delta")
+        Logs.show_log(
+            f"range upgrades number {world.get_range_upgrade_number()}")
+        Logs.show_log(
+            f"damage upgrades number {world.get_damage_upgrade_number()}")
+        return world.get_range_upgrade_number() >= 2 and world.get_damage_upgrade_number() >= 1
 
     def iam_helper(self, world: World):
         units = world.get_me().units
@@ -106,10 +115,10 @@ class UnitHandler:
 
         else:  # one path
             # special case
-            if world.get_me().units:
+            if self.put_special:
                 last_unit = world.get_me().units[-1]
-            if self.in_delta_mode(world) and not self.special_unit and last_unit.base_unit.type_id == 0:
                 self.special_unit = last_unit
+                self.put_special = False
                 Logs.show_log(
                     f" we have special unit now {self.special_unit.unit_id}")
 
@@ -123,6 +132,7 @@ class UnitHandler:
                             Logs.show_log(
                                 f"units before put: {[unit.base_unit.type_id for unit in world.get_me().units]}")
                             world.put_unit(base_unit=u, path=paths[0])
+                            self.put_special = True
                             break
                         else:
                             Logs.show_log(f"not enough ap {myself.ap}")
@@ -166,6 +176,7 @@ class UnitHandler:
         """
         """
         # my paths
+        # TODO: when enemy dies
         my_king = world.get_me().king.center
         paths_from_me = world.get_paths_crossing_cell(cell=my_king)
         # first enemy paths

@@ -3,18 +3,18 @@ from typing import List
 
 from model import Cell, Logs, Path, Spell, SpellTarget, SpellType, Unit, Player
 from world import World
-
+from core.UnitHandler import UnitHandler
 
 class SpellHandler:
-    def __init__(self, paths_for_my_units: List[Path],splls: List[Spell]):
+    def __init__(self,unit_handler:UnitHandler,splls: List[Spell]):
         super().__init__()
-        self.paths_for_my_units = paths_for_my_units
         self._splls_=splls
+        self.unit_handler = unit_handler
         self.targeted_enemy:Player=None
     def Targeted_enemy(self,world:World)->Player:
         My_First_Enemy = world.get_first_enemy()
         My_Second_Enemy = world.get_second_enemy()
-        for path in self.paths_for_my_units:
+        for path in self.unit_handler.paths_for_my_units:
             if My_First_Enemy.king.center in path.cells:
                 return My_First_Enemy
             if My_Second_Enemy.king.center in path.cells:
@@ -183,7 +183,7 @@ class SpellHandler:
             Targets=[]
             Logs.show_log(f"target enemy -> spell type : {received_spell.type}")
             #best cell for HP(Posion And Damage)
-            for unit in self.paths_for_my_units[0].cells:
+            for unit in self.unit_handler.paths_for_my_units[0].cells:
 
                 target = world.get_area_spell_targets(
                     center=unit, spell=received_spell)
@@ -205,7 +205,7 @@ class SpellHandler:
             if(received_spell.type == SpellType.HP):
                 num_enemy_around_cell = 0
                 grade_cell = 4
-                for unit in self.paths_for_my_units[0].cells:
+                for unit in self.unit_handler.paths_for_my_units[0].cells:
                     target = world.get_area_spell_targets(
                         center=unit, spell=received_spell)
                     grade_cell_temp = self.Grade_Hp_Allied_Cell(target)
@@ -283,7 +283,7 @@ class SpellHandler:
                         Grade_tele=temp_grade
                         unit=_unit
 
-            my_paths = self.paths_for_my_units
+            my_paths = self.unit_handler.paths_for_my_units
             path = my_paths[random.randint(0, len(my_paths) - 1)]
             size = len(path.cells)
             cell = path.cells[int((size - 1) / 2)]

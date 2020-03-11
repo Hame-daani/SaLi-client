@@ -2,17 +2,17 @@ from typing import List
 
 from model import Logs, Path,Cell,Unit,Player
 from world import World
-
+from core.UnitHandler import UnitHandler
 
 class UpgradeHandler:
-    def __init__(self,paths_for_my_units: List[Path], special_unit:Unit):
+    def __init__(self,unit_handler:UnitHandler):
         super().__init__()
-        self.paths_for_my_units = paths_for_my_units
-        self.special_unit = special_unit
+        self.unit_handler = unit_handler
+
     def Targeted_enemy(self, world: World) -> Player:
         My_First_Enemy = world.get_first_enemy()
         My_Second_Enemy = world.get_second_enemy()
-        for path in self.paths_for_my_units:
+        for path in self.unit_handler.paths_for_my_units:
             if My_First_Enemy.king.center in path.cells:
                 return My_First_Enemy
             if My_Second_Enemy.king.center in path.cells:
