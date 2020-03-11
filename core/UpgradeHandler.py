@@ -28,7 +28,16 @@ class UpgradeHandler:
     def enemt_level_Logs(self,world:World):
         enemy_unit=world.get_first_enemy().units
         enemy_unit.extend(world.get_second_enemy().units)
+        Logs.show_log(f"///--------------------------ME-----------------------------------////")
+        for _unit in world.get_me().units:
+            if(_unit.range_level>0):
+                Logs.show_log(f"unit->id :{_unit.unit_id}  player id :{_unit.player_id}"
+                              f"  damage level :{_unit.damage_level}  range level :{_unit.range_level}"
+                              f"  unit->attack :{_unit.attack} unit->hp :{_unit.hp}"
+                              f"  base unit id :{_unit.base_unit.type_id}"
+                              f"  unit cell : {_unit.cell}")
         Logs.show_log(f"///-------------------------------------------------------------////")
+        Logs.show_log(f"///------------------------Enemy-------------------------------------////")
         for unit in enemy_unit:
             if(unit.range_level>0 or unit.damage_level>0):
                 Logs.show_log(f"unit->id :{unit.unit_id}  player id :{unit.player_id}"
@@ -66,17 +75,13 @@ class UpgradeHandler:
           Logs.show_log(f"range :{world.get_range_upgrade_number()}")
           Logs.show_log(f"damage :{world.get_damage_upgrade_number()}")
 
-          if len(my_units) > 0:
-              for _unit in my_units:
-                 if(_unit.base_unit.type_id == 0 or _unit.base_unit.type_id==6):
-                      Logs.show_log(f"UPGRADE -> Unit;{_unit} -> dist :{self.near(world, _unit)}")
-                      temp_grade = _unit.hp + _unit.attack*2+_unit.range*3
-                      if (temp_grade > Grade_Upgrade and self.near(world,_unit)>4):
-                           Grade_Upgrade = temp_grade
-                           unit = _unit
-              if(unit is not None):
-                    Logs.show_log(f"my  unit :{unit}")
-                    world.upgrade_unit_range(unit=unit)
-                    world.upgrade_unit_damage(unit=unit)
-                    Logs.show_log(f"my unit upgrade-> damage level:{unit.damage_level} range :{unit.range_level} (0_0) "
-                                  f"dist:{self.near(world,unit)}")
+          for unit in myself.units:
+              if (unit.base_unit.type_id == 0):
+                  if (self.Manhatan_Distance(unit.cell, myself.king.center) <= 2 or unit.range_level > 0):
+                      if (world.get_range_upgrade_number() > 2 or unit.range_level > 0):
+                          world.upgrade_unit_range(unit=unit)
+                          if (world.get_range_upgrade_number() == 0):
+                              world.upgrade_unit_damage(unit=unit)
+                          Logs.show_log(f"my upgrade unit : {unit} -> Range Level:{unit.range_level}"
+                                        f"   Damege Level : {unit.damage_level}"
+                                        f"   unit cell : {unit.cell}")

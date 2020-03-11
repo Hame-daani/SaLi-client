@@ -276,6 +276,7 @@ class SpellHandler:
         if len(my_units) > 0:
             unit = None
             for _unit in my_units:
+              if(_unit.range_level<1):
                 if(self.Manhatan_Distance(BeginingCell=myself.king.center,EndingCell=_unit.cell)<=3):
                     temp_grade=_unit.hp+_unit.damage_level
                     if(temp_grade>Grade_tele and _unit.hp>0):
