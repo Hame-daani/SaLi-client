@@ -5,9 +5,10 @@ from world import World
 
 
 class UpgradeHandler:
-    def __init__(self,paths_for_my_units: List[Path]):
+    def __init__(self,paths_for_my_units: List[Path], special_unit:Unit):
         super().__init__()
         self.paths_for_my_units = paths_for_my_units
+        self.special_unit = special_unit
     def Targeted_enemy(self, world: World) -> Player:
         My_First_Enemy = world.get_first_enemy()
         My_Second_Enemy = world.get_second_enemy()

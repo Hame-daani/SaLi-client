@@ -2,12 +2,14 @@ from typing import List
 
 from model import Logs, Path, Player, BaseUnit, Unit
 from world import World
+from core.PickHandler import PickHandler
 
 
 class UnitHandler:
-    def __init__(self, pick_handler):
+    def __init__(self, pick_handler: PickHandler, special_unit: Unit):
         super().__init__()
         self.pick_handler = pick_handler
+        self.special_unit = special_unit
 
     def process(self, world: World) -> List[Path]:
         """
@@ -16,7 +18,7 @@ class UnitHandler:
         Logs.show_log(
             f"choosen paths: {[path.id for path in paths_for_my_units]}")
         self.put_units(world, paths_for_my_units)
-        return paths_for_my_units
+        return paths_for_my_units, self.special_unit
 
     def choose_path(self, world: World):
         """
@@ -32,6 +34,10 @@ class UnitHandler:
             Logs.show_log(f"goes in attack mode.")
             paths_for_my_units = self.attack_mode(world)
         return paths_for_my_units
+
+    def in_delta_mode(self, world: World):
+        Logs.show_log(f"upgrades number {world.get_range_upgrade_number()}")
+        return world.get_range_upgrade_number() >= 3
 
     def iam_helper(self, world: World):
         units = world.get_me().units
@@ -99,6 +105,32 @@ class UnitHandler:
                                 break  # put one unit
 
         else:  # one path
+            # special case
+            if world.get_me().units:
+                last_unit = world.get_me().units[-1]
+            if self.in_delta_mode(world) and not self.special_unit and last_unit.base_unit.type_id == 0:
+                self.special_unit = last_unit
+                Logs.show_log(
+                    f" we have special unit now {self.special_unit.unit_id}")
+
+            if self.in_delta_mode(world) and not self.special_unit:
+                Logs.show_log(f"in delta mode")
+                for u in hand:
+                    if u.type_id == 0:
+                        Logs.show_log(f" found zero type unit")
+                        if u.ap <= myself.ap:
+                            paths = self.attack_mode(world)
+                            Logs.show_log(
+                                f"units before put: {[unit.base_unit.type_id for unit in world.get_me().units]}")
+                            world.put_unit(base_unit=u, path=paths[0])
+                            break
+                        else:
+                            Logs.show_log(f"not enough ap {myself.ap}")
+                            return
+                if not self.special_unit:
+                    Logs.show_log(
+                        f" not found a zero type unit {[u.type_id for u in hand]}")
+            # end of special case
             # reversed best are in the end
             for unit in reversed(hand):
                 if unit.ap <= myself.ap:
@@ -108,39 +140,8 @@ class UnitHandler:
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
                     turn = world.get_current_turn()
                     if turn != 1:
-                        break  # one unit per turn
-
-    # def friend_in_danger(self, world: World) -> Path:
-    #     """
-    #     """
-    #     paths = world.get_friend().paths_from_player
-    #     units = world.get_me().units
-    #     if any(unit.target_if_king for unit in units):
-    #         return None
-
-    #     if world.get_friend().king.target_cell:
-    #         target_cell = world.get_friend().king.target_cell
-    #         for path in paths:
-    #             if target_cell in path.cells:
-    #                 return path
-    #     else:
-    #         enemy_units = world.get_first_enemy().units
-    #         enemy_units.extend(world.get_second_enemy().units)
-    #         for path in paths:
-    #             # units in cell 8 => king.range+2
-    #             # to be perepared
-    #             king_range = world.get_friend().king.range
-    #             Logs.show_log(f"friend king range: {king_range}")
-    #             cell_units = world.get_cell_units(path.cells[king_range])
-    #             if any(unit in cell_units for unit in enemy_units):
-    #                 return path
-    #     return None
-
-    # def allied_mode(self, world: World):
-    #     """
-    #     """
-    #     target_path = self.friend_in_danger(world)
-    #     return [target_path]
+                        return  # one unit per turn
+            Logs.show_log(f"put no unit.")
 
     def in_danger(self, world: World) -> Path:
         """
@@ -152,6 +153,7 @@ class UnitHandler:
             for path in paths:
                 if target_cell in path.cells:
                     return path
+        # TODO: when we are under attack
         return None
 
     def defense_mode(self, world: World):
@@ -183,18 +185,3 @@ class UnitHandler:
             p for p in path_to_enemy if len(p.cells) == len(min_path.cells)
         ]
         return path_for_my_units
-
-    # def fucked_up(self, world: World):
-    #     """
-    #     """
-    #     return not world.get_friend().is_alive()
-
-    # def delta_mode(self, world: World):
-    #     """
-    #     """
-    #     paths = []
-    #     paths.append(world.get_friend().paths_from_player[0])
-    #     my_path = self.in_danger(world)
-    #     if my_path:
-    #         paths.append(my_path)
-    #     return paths
