@@ -50,8 +50,7 @@ class UpgradeHandler:
     def process(self, world: World):
         """
         """
-
-
+        self.enemt_level_Logs(world)
         # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
         myself = world.get_me()
         my_units=myself.units
@@ -62,7 +61,6 @@ class UpgradeHandler:
         unit = None
 
         if world.get_range_upgrade_number() is not 0 or world.get_damage_upgrade_number() is not 0:
-          self.enemt_level_Logs(world)
           Logs.show_log(f"have upgrade.")
           Logs.show_log(f"range :{world.get_range_upgrade_number()}")
           Logs.show_log(f"damage :{world.get_damage_upgrade_number()}")
