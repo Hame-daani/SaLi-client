@@ -23,7 +23,11 @@ class SpellHandler:
         """
         """
         # this code tries to cast the received spell
-        Logs.show_log(f"Im process and All sepll :{world.get_all_spells()}")
+        My_First_Enemy = self.Targeted_enemy(world)
+        if(My_First_Enemy.cast_area_spell is not None):
+            Logs.show_log(f"first enemy spell last turn -> cell : {My_First_Enemy.cast_area_spell.cell}"
+                      f"type spell : {My_First_Enemy.cast_area_spell.spell}"
+                      f"unit affcted : {My_First_Enemy.cast_area_spell.affected_units}")
         self.targeted_enemy=self.Targeted_enemy(world)
         received_spell = world.get_received_spell()
         if received_spell is not None:
@@ -147,6 +151,14 @@ class SpellHandler:
                  elif(hp <= 20):
                      grad = grad +3
         return grad
+    def Dupli(self,units:List["Unit"])->bool:
+        grade=0
+        for unit in units:
+            if(unit.range>3):
+                grade=grade+1
+            if(grade>1):
+                return True
+        return False
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
         My_Player = world.get_me()
@@ -215,7 +227,8 @@ class SpellHandler:
                     targeted_cell_enemy=self.Manhatan_Distance(unit.cell,self.targeted_enemy.king.center)
                     Logs.show_log(f" DUPLICATE Number arround : {len(target)} "
                                   f" -- dist to enemy :{targeted_cell_enemy}")
-                    if (len(target) >= num_enemy_around_cell and targeted_cell_enemy<distance_unit_to_select_enemy ):
+                    if ((len(target) >= num_enemy_around_cell and targeted_cell_enemy<distance_unit_to_select_enemy) or
+                            (self.Dupli(target)==True and targeted_cell_enemy<distance_unit_to_select_enemy)):
                         Logs.show_log(f" Number arround : {len(target)}  --  Unit :{unit}"
                                       f" -- dist to enemy :{targeted_cell_enemy}")
                         distance_unit_to_select_enemy=targeted_cell_enemy
@@ -224,14 +237,17 @@ class SpellHandler:
                         Select_Cell = unit.cell
             else:
                 num_enemy_around_cell = 2
+                distance_unit_to_select_enemy=0
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(
                         center=unit.cell, spell=received_spell)
+                    targeted_cell_enemy = self.Manhatan_Distance(unit.cell, self.targeted_enemy.king.center)
                     Logs.show_log(
                         f" Haste Number arround : {len(target)}  --  Unit :{unit} ")
-                    if (len(target) > num_enemy_around_cell ):
+                    if (len(target) >= num_enemy_around_cell and targeted_cell_enemy>distance_unit_to_select_enemy ):
                         Logs.show_log(
                             f"its ok Haste Number arround : {len(target)}  --  Unit :{unit} ")
+                        distance_unit_to_select_enemy=targeted_cell_enemy
                         num_enemy_around_cell = len(target)
                         Select_Cell = unit.cell
                         Targets = target

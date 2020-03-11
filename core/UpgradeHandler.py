@@ -24,6 +24,19 @@ class UpgradeHandler:
         dist =int( math.fabs(BeginingCell.row-EndingCell.row) +
             math.fabs(BeginingCell.col-EndingCell.col))
         return dist
+    def enemt_level_Logs(self,world:World):
+        enemy_unit=world.get_first_enemy().units
+        enemy_unit.extend(world.get_second_enemy().units)
+        Logs.show_log(f"///-------------------------------------------------------------////")
+        for unit in enemy_unit:
+            if(unit.range_level>0 or unit.damage_level>0):
+                Logs.show_log(f"unit->id :{unit.unit_id}  player id :{unit.player_id}"
+                              f"  damage level :{unit.damage_level}  range level :{unit.range_level}"
+                              f"  unit->attack :{unit.attack} unit->hp :{unit.hp}"
+                              f"  base unit id :{unit.base_unit.type_id}"
+                              f"  unit cell : {unit.cell}")
+        Logs.show_log(f"///-------------------------------------------------------------////")
+
     def near(self,world:World,unit:Unit)->int:
         my_enemy = self.Targeted_enemy(world)
         my_enemy_units = my_enemy.units
@@ -37,6 +50,8 @@ class UpgradeHandler:
     def process(self, world: World):
         """
         """
+
+
         # this code tries to upgrade damage of first unit. in case there's no damage token, it tries to upgrade range
         myself = world.get_me()
         my_units=myself.units
@@ -47,6 +62,7 @@ class UpgradeHandler:
         unit = None
 
         if world.get_range_upgrade_number() is not 0 or world.get_damage_upgrade_number() is not 0:
+          self.enemt_level_Logs(world)
           Logs.show_log(f"have upgrade.")
           Logs.show_log(f"range :{world.get_range_upgrade_number()}")
           Logs.show_log(f"damage :{world.get_damage_upgrade_number()}")
