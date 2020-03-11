@@ -181,28 +181,53 @@ class SpellHandler:
             num_enemy_around_cell = 3
             grade_cell = 5
             Targets=[]
-            Logs.show_log(f"target enemy -> spell type : {received_spell.type}")
-            #best cell for HP(Posion And Damage)
-            for unit in self.unit_handler.paths_for_my_units[0].cells:
+            if(self.unit_handler.in_danger(world) is not None and received_spell.type_id==1):
+                num_enemy_around_cell=0
+                grade_cell=0
+                Logs.show_log(f"target enemy -> spell type : {received_spell.type}  Damge")
+                #best cell for HP(Posion And Damage)
+                for unit in self.unit_handler.paths_for_my_units[0].cells:
 
-                target = world.get_area_spell_targets(
-                    center=unit, spell=received_spell)
-                grade_cell_temp = self.Grade_Hp_Enemy_Cell(target)
-                Logs.show_log(f"Grade:{grade_cell_temp} -- Unit num :{len(target)}")
-                if(len(target) >= num_enemy_around_cell and grade_cell_temp >= grade_cell):
-                    Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
-                    num_enemy_around_cell = len(target)
-                    grade_cell = grade_cell_temp
-                    Select_Cell = unit
-                    Targets=target
-            Logs.show_log(f"Target cell :{Select_Cell}")
-            for uni in Targets:
-                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp} player unit :{uni.player_id}"))
+                    target = world.get_area_spell_targets(
+                        center=unit, spell=received_spell)
+                    grade_cell_temp = self.Grade_Hp_Enemy_Cell(target)
+                    Logs.show_log(f"Grade:{grade_cell_temp} -- Unit num :{len(target)}")
+                    if(len(target) >= num_enemy_around_cell and grade_cell_temp >= grade_cell):
+                        Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
+                        num_enemy_around_cell = len(target)
+                        grade_cell = grade_cell_temp
+                        Select_Cell = unit
+                        Targets=target
+                Logs.show_log(f"Target cell :{Select_Cell}")
+                for uni in Targets:
+                    Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp} player unit :{uni.player_id}"))
+            else:
+                Logs.show_log(f"target enemy -> spell type : {received_spell.type}  pisoin")
+                # best cell for HP(Posion And Damage)
+                for unit in self.unit_handler.paths_for_my_units[0].cells:
+
+                    target = world.get_area_spell_targets(
+                        center=unit, spell=received_spell)
+                    grade_cell_temp = self.Grade_Hp_Enemy_Cell(target)
+                    Logs.show_log(f"Grade:{grade_cell_temp} -- Unit num :{len(target)}")
+                    if (len(target) >= num_enemy_around_cell and grade_cell_temp >= grade_cell):
+                        Logs.show_log(f"Grade:{grade_cell_temp} -- Unit:{unit}")
+                        num_enemy_around_cell = len(target)
+                        grade_cell = grade_cell_temp
+                        Select_Cell = unit
+                        Targets = target
+                Logs.show_log(f"Target cell :{Select_Cell}")
+                for uni in Targets:
+                    Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp} player unit :{uni.player_id}"))
 
         elif(received_spell.target == SpellTarget.ALLIED):
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
             Targets=[]
             if(received_spell.type == SpellType.HP):
+                if(self.unit_handler.special_unit is not None):
+                    if(self.unit_handler.special_unit.hp<self.unit_handler.special_unit.base_unit.max_hp):
+                        Logs.show_log(f"hp in my special Unit -> unit hp : {self.unit_handler.special_unit.hp}")
+                        return self.unit_handler.special_unit.cell
                 num_enemy_around_cell = 0
                 grade_cell = 4
                 for unit in self.unit_handler.paths_for_my_units[0].cells:
@@ -236,7 +261,7 @@ class SpellHandler:
                         Targets=target
                         Select_Cell = unit.cell
             else:
-                num_enemy_around_cell = 2
+                num_enemy_around_cell = 3
                 distance_unit_to_select_enemy=0
                 for unit in All_units_own:
                     target = world.get_area_spell_targets(

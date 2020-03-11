@@ -125,8 +125,8 @@ class UnitHandler:
             if self.in_delta_mode(world) and not self.special_unit:
                 Logs.show_log(f"in delta mode")
                 for u in hand:
-                    if u.type_id == 0:
-                        Logs.show_log(f" found zero type unit")
+                    if u.type_id == 1 or u.type_id == 6:
+                        Logs.show_log(f" found a unit")
                         if u.ap <= myself.ap:
                             paths = self.attack_mode(world)
                             Logs.show_log(
@@ -139,7 +139,7 @@ class UnitHandler:
                             return
                 if not self.special_unit:
                     Logs.show_log(
-                        f" not found a zero type unit {[u.type_id for u in hand]}")
+                        f" not found a unit {[u.type_id for u in hand]}")
             # end of special case
             # reversed best are in the end
             for unit in reversed(hand):
