@@ -32,9 +32,9 @@ class UnitHandler:
         if self.in_danger(world):
             Logs.show_log(f"goes in defense mode.")
             paths_for_my_units = self.defense_mode(world)
-        elif self.iam_helper(world):
-            Logs.show_log(f"goes in helper mode.")
-            paths_for_my_units = self.helper_mode(world)
+        # elif self.iam_helper(world):
+        #     Logs.show_log(f"goes in helper mode.")
+        #     paths_for_my_units = self.helper_mode(world)
         else:
             Logs.show_log(f"goes in attack mode.")
             paths_for_my_units = self.attack_mode(world)
@@ -50,7 +50,8 @@ class UnitHandler:
         ) >= 2 and world.get_damage_upgrade_number() >= 1
         option2 = world.get_range_upgrade_number(
         ) >= 1 and world.get_damage_upgrade_number() >= 4
-        return option1 or option2
+        option3 = world.get_range_upgrade_number() >= 3
+        return option1 or option2 or option3
 
     def iam_helper(self, world: World):
         units = world.get_me().units
@@ -152,10 +153,7 @@ class UnitHandler:
                     Logs.show_log(
                         f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
-                    turn = world.get_current_turn()
-                    if turn != 1:
-                        # TODO send 2 by 2
-                        return  # one unit per turn
+                    return  # one unit per turn
             Logs.show_log(f"put no unit.")
 
     def in_danger(self, world: World) -> Path:
@@ -181,17 +179,20 @@ class UnitHandler:
         """
         """
         # my paths
-        # TODO: when enemy dies
         my_king = world.get_me().king.center
         paths_from_me = world.get_paths_crossing_cell(cell=my_king)
+        paths_to_first_enemy = []
+        paths_to_second_enemy = []
         # first enemy paths
-        first_enemy_king = world.get_first_enemy().king.center
-        paths_to_first_enemy = world.get_paths_crossing_cell(
-            cell=first_enemy_king)
+        if world.get_first_enemy().is_alive():
+            first_enemy_king = world.get_first_enemy().king.center
+            paths_to_first_enemy = world.get_paths_crossing_cell(
+                cell=first_enemy_king)
         # second enemy paths
-        second_enemy_king = world.get_second_enemy().king.center
-        paths_to_second_enemy = world.get_paths_crossing_cell(
-            cell=second_enemy_king)
+        if world.get_second_enemy().is_alive():
+            second_enemy_king = world.get_second_enemy().king.center
+            paths_to_second_enemy = world.get_paths_crossing_cell(
+                cell=second_enemy_king)
         path_to_enemy = [
             path for path in paths_from_me if path in paths_to_first_enemy]
         path_to_enemy.extend(
@@ -200,4 +201,6 @@ class UnitHandler:
         path_for_my_units = [
             p for p in path_to_enemy if len(p.cells) == len(min_path.cells)
         ]
+        if not path_for_my_units:
+            Logs.show_log(f"error in finding path in attack mode")
         return path_for_my_units
