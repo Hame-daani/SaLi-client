@@ -23,6 +23,7 @@ class SpellHandler:
         """
         """
         # this code tries to cast the received spell
+        Logs.show_log(f"Im process and All sepll :{world.get_all_spells()}")
         self.targeted_enemy=self.Targeted_enemy(world)
         received_spell = world.get_received_spell()
         if received_spell is not None:
@@ -130,21 +131,21 @@ class SpellHandler:
             if(unit.hp < 10):
                 grad = grad+4
             elif(unit.hp < 15):
-                grad = grad+2
+                grad = grad+3
             else:
-                grad = grad+1
+                grad = grad+2
         return grad
     def Grade_Hp_Allied_Cell(self, units:List["Unit"]) -> int:
         grad = 0
         for unit in units:
             hp = unit.base_unit.max_hp - unit.hp
-            if(unit.hp>3 and hp>3):
+            if(unit.hp>1 and hp>1):
                  if(hp <=5):
                      grad = grad+1
                  elif(hp <= 10):
                      grad = grad+2
                  elif(hp <= 20):
-                     grad = grad +4
+                     grad = grad +3
         return grad
     def BestCell(self, world: World, received_spell: Spell):
         # -----------------------------
@@ -184,13 +185,13 @@ class SpellHandler:
                     Targets=target
             Logs.show_log(f"Target cell :{Select_Cell}")
             for uni in Targets:
-                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp}"))
+                Logs.show_log((f" enemy unit : {uni}  hp:{uni.hp} player unit :{uni.player_id}"))
 
         elif(received_spell.target == SpellTarget.ALLIED):
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
             Targets=[]
             if(received_spell.type == SpellType.HP):
-                num_enemy_around_cell = 3
+                num_enemy_around_cell = 0
                 grade_cell = 4
                 for unit in self.paths_for_my_units[0].cells:
                     target = world.get_area_spell_targets(
@@ -237,7 +238,7 @@ class SpellHandler:
 
             Logs.show_log(f"target alied best select  :{Select_Cell}")
             for uni in Targets:
-                Logs.show_log((f" my unit : {uni}  hp:{uni.hp}"))
+                Logs.show_log((f" my unit : {uni}  hp:{uni.hp} player id:{uni.player_id}"))
 
         return Select_Cell
 
