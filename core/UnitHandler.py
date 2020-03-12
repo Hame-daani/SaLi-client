@@ -51,8 +51,6 @@ class UnitHandler:
             f"range upgrades number {world.get_range_upgrade_number()}")
         Logs.show_log(
             f"damage upgrades number {world.get_damage_upgrade_number()}")
-        option1 = world.get_range_upgrade_number(
-        ) >= 2 and world.get_damage_upgrade_number() >= 1
         option2 = world.get_range_upgrade_number(
         ) >= 1 and world.get_damage_upgrade_number() >= 4
         option3 = world.get_range_upgrade_number() >= 3
@@ -86,7 +84,7 @@ class UnitHandler:
         """
         """
         myself = world.get_me()
-        hand = sorted(myself.hand, key=self.pick_handler.chooser)
+        hand = sorted(myself.hand, key=lambda u:1/u.ap)
         return hand, myself
 
     def two_by_two_mode(self, world: World):
@@ -157,20 +155,8 @@ class UnitHandler:
             Logs.show_log(f"standby off cause of attack")
             self.standby = False
             return
-        if myself.ap >= max_ap*0.75:
-            Logs.show_log(f"standby off cause of ap {myself.ap}")
+        if myself.ap == max_ap:
             self.standby = False
-            return
-        unit_aggregation = self.units_aggregation(world)
-        unit_total = self.unit_total(world)
-        if unit_total >= 6 and unit_aggregation >= 3:
-            Logs.show_log(f"standby on")
-            self.standby = True
-            return
-        # if unit_total < 3:
-        #     Logs.show_log(f"standby off")
-        #     self.standby = False
-        #     return
 
     def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
@@ -242,6 +228,9 @@ class UnitHandler:
                         f" not found a unit {[u.type_id for u in hand]}")
             # end of special case
             # reversed best are in the end
+            if myself.ap < 6:
+                self.standby = True
+                return
             for unit in reversed(hand):
                 if unit.ap <= myself.ap:
                     myself.ap -= unit.ap
@@ -249,6 +238,7 @@ class UnitHandler:
                         f"unit: {unit.type_id} in path: {paths_for_my_units[0].id}")
                     world.put_unit(base_unit=unit, path=paths_for_my_units[0])
                     return  # one unit per turn
+            self.standby = True
             Logs.show_log(f"put no unit.")
 
     def enemy_aggregation(self, world: World, path: Path, i, enemy_units: List[Unit]):
@@ -274,7 +264,7 @@ class UnitHandler:
         king_range = world.get_me().king.range
         units = world.get_first_enemy().units + world.get_second_enemy().units
         for path in paths:
-            if self.enemy_aggregation(world, path, king_range-1, units) > 2:
+            if self.enemy_aggregation(world, path, king_range-2, units) >= 2:
                 Logs.show_log(f"danger: enemy aggregation")
                 return path
         for unit in units:

@@ -229,19 +229,19 @@ class SpellHandler:
                     if(self.unit_handler.special_unit.hp<15):
                         Logs.show_log(f"hp in my special Unit -> unit hp : {self.unit_handler.special_unit.hp}")
                         return self.unit_handler.special_unit.cell
-                num_enemy_around_cell = 0
-                grade_cell = 4
-                for unit in self.unit_handler.paths_for_my_units[0].cells:
-                    target = world.get_area_spell_targets(
-                        center=unit, spell=received_spell)
-                    grade_cell_temp = self.Grade_Hp_Allied_Cell(target)
-                    Logs.show_log(f" hp -> {grade_cell_temp} - > num unit : {len(target)}")
-                    if (len(target) >= num_enemy_around_cell and grade_cell_temp > grade_cell):
-                        Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
-                        num_enemy_around_cell = len(target)
-                        Targets=target
-                        grade_cell = grade_cell_temp
-                        Select_Cell = unit
+                # num_enemy_around_cell = 0
+                # grade_cell = 4
+                # for unit in self.unit_handler.paths_for_my_units[0].cells:
+                #     target = world.get_area_spell_targets(
+                #         center=unit, spell=received_spell)
+                #     grade_cell_temp = self.Grade_Hp_Allied_Cell(target)
+                #     Logs.show_log(f" hp -> {grade_cell_temp} - > num unit : {len(target)}")
+                #     if (len(target) >= num_enemy_around_cell and grade_cell_temp > grade_cell):
+                #         Logs.show_log(f"Grade:{grade_cell_temp}  --  Unit:{unit}")
+                #         num_enemy_around_cell = len(target)
+                #         Targets=target
+                #         grade_cell = grade_cell_temp
+                #         Select_Cell = unit
             elif(received_spell.type == SpellType.DUPLICATE):
                 # cell for Haste And Duolicate
                 num_enemy_around_cell = 3
@@ -314,7 +314,7 @@ class SpellHandler:
             size = len(path.cells)
             cell = path.cells[int((size - 1) / 2)]
             Logs.show_log(f"target Self -> spell type : {received_spell.type}")
-            Logs.show_log(f"unit : {unit}  unit cell : {unit.cell}  cell : {cell}")
+            # Logs.show_log(f"unit : {unit}  unit cell : {unit.cell}  cell : {cell}")
             world.cast_unit_spell(
                 unit=unit, path=path, cell=cell, spell=received_spell)
             received_spell=None
