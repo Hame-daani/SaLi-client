@@ -1,6 +1,6 @@
 from typing import List
 
-from model import Logs, Path, Player, BaseUnit, Unit
+from model import Logs, Path, Player, BaseUnit, Unit, Cell
 from world import World
 from core.PickHandler import PickHandler
 
@@ -12,6 +12,7 @@ class UnitHandler:
         self.special_unit: Unit = None
         self.paths_for_my_units: List[Path] = None
         self.put_special = False
+        self.standby = False
 
     def process(self, world: World):
         """
@@ -144,36 +145,39 @@ class UnitHandler:
         my_units = world.get_me().units
         return any(unit.target_if_king for unit in my_units)
 
-    def stand_by(self, world: World):
+    def check_stand_by(self, world: World):
         Logs.show_log(f"checking for standby")
         myself = world.get_me()
         max_ap = world.get_game_constants().max_ap
         if self.in_danger(world):
             Logs.show_log(f"standby off cause of danger")
-            return False
+            self.standby = False
+            return
         if self.we_do_attack(world):
             Logs.show_log(f"standby off cause of attack")
-            return False
-        if myself.ap >= max_ap*0.75:
+            self.standby = False
+            return
+        if myself.ap >= max_ap:
             Logs.show_log(f"standby off cause of ap {myself.ap}")
-            return False
+            self.standby = False
+            return
         unit_aggregation = self.units_aggregation(world)
         unit_total = self.unit_total(world)
-        if unit_total > 6:
-            Logs.show_log(f"standby on cause of unit total {unit_total}")
-            return True
-        if unit_aggregation >= 4:
-            Logs.show_log(
-                f"standby on cause of unit aggregation {unit_aggregation}")
-            return True
-        Logs.show_log(f"standby off")
-        return False
+        if unit_total >= 6 or unit_aggregation >= 4:
+            Logs.show_log(f"standby on")
+            self.standby = True
+            return
+        if unit_total < 3:
+            Logs.show_log(f"standby off")
+            self.standby = False
+            return
 
     def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
         """
         hand, myself = self.choose_units(world)
-        if self.stand_by(world):
+        self.check_stand_by(world)
+        if self.standby:
             return
         if world.get_current_turn() < 10:
             self.two_by_two_mode(world)
@@ -247,24 +251,38 @@ class UnitHandler:
                     return  # one unit per turn
             Logs.show_log(f"put no unit.")
 
+    def enemy_aggregation(self, world: World, path: Path, i, enemy_units: List[Unit]):
+        unit_number = 0
+        units = world.get_cell_units(path.cells[i-1])
+        for unit in units:
+            if unit in enemy_units:
+                unit_number += 1
+        units = world.get_cell_units(path.cells[i])
+        for unit in units:
+            if unit in enemy_units:
+                unit_number += 1
+        units = world.get_cell_units(path.cells[i+1])
+        for unit in units:
+            if unit in enemy_units:
+                unit_number += 1
+        return unit_number
+
     def in_danger(self, world: World) -> Path:
         """
         """
         paths = world.get_me().paths_from_player
-        if world.get_me().king.target_cell:
-            target_cell = world.get_me().king.target_cell
-            Logs.show_log(f"king under danger {target_cell}")
-            for path in paths:
-                if target_cell in path.cells:
-                    return path
-        else:
-            units = world.get_first_enemy().units + world.get_second_enemy().units
-            for unit in units:
-                if unit.target_if_king == world.get_me().king:
-                    for path in paths:
-                        if unit.cell in path.cells:
-                            return path
-
+        king_range = world.get_me().king.range
+        units = world.get_first_enemy().units + world.get_second_enemy().units
+        for path in paths:
+            if self.enemy_aggregation(world, path, king_range-1, units) > 2:
+                Logs.show_log(f"danger: enemy aggregation")
+                return path
+        for unit in units:
+            if unit.target_if_king == world.get_me().king:
+                for path in paths:
+                    if unit.cell in path.cells:
+                        Logs.show_log(f"danger: king under attack")
+                        return path
         return None
 
     def defense_mode(self, world: World):
