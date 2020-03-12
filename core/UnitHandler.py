@@ -17,13 +17,17 @@ class UnitHandler:
         """
         """
         if self.special_unit:
-            Logs.show_log(
-                f" we have special unit now {self.special_unit.unit_id}")
+            if self.special_unit.hp <= 1:
+                Logs.show_log(f"restart special unit")
+                self.special_unit = None
+            else:
+                Logs.show_log(
+                    f" we have special unit now {self.special_unit.unit_id}")
         paths_for_my_units = self.choose_path(world)
         Logs.show_log(
             f"choosen paths: {[path.id for path in paths_for_my_units]}")
-        self.put_units(world, paths_for_my_units)
         self.paths_for_my_units = paths_for_my_units
+        self.put_units(world, paths_for_my_units)
 
     def choose_path(self, world: World):
         """
@@ -101,10 +105,76 @@ class UnitHandler:
                         base_unit=unit, path=self.paths_for_my_units[0])
                     i += 1
 
+    def units_aggregation(self, world: World):
+        max_number = 0
+        my_units = world.get_me().units
+        path = self.paths_for_my_units[0]
+        for i in range(1, len(path.cells)-1):
+            unit_number = 0
+            units = world.get_cell_units(path.cells[i-1])
+            for unit in units:
+                if unit in my_units:
+                    unit_number += 1
+            units = world.get_cell_units(path.cells[i])
+            for unit in units:
+                if unit in my_units:
+                    unit_number += 1
+            units = world.get_cell_units(path.cells[i+1])
+            for unit in units:
+                if unit in my_units:
+                    unit_number += 1
+            if unit_number > max_number:
+                max_number = unit_number
+        Logs.show_log(f"aggregation unit: {max_number}")
+        return max_number
+
+    def unit_total(self, world: World):
+        unit_number = 0
+        my_units = world.get_me().units
+        path = self.paths_for_my_units[0]
+        for cell in path.cells:
+            cell_units = world.get_cell_units(cell)
+            for unit in cell_units:
+                if unit in my_units:
+                    unit_number += 1
+        Logs.show_log(f"total unit: {unit_number}")
+        return unit_number
+
+    def we_do_attack(self, world: World):
+        my_units = world.get_me().units
+        return any(unit.target_if_king for unit in my_units)
+
+    def stand_by(self, world: World):
+        Logs.show_log(f"checking for standby")
+        myself = world.get_me()
+        max_ap = world.get_game_constants().max_ap
+        if self.in_danger(world):
+            Logs.show_log(f"standby off cause of danger")
+            return False
+        if self.we_do_attack(world):
+            Logs.show_log(f"standby off cause of attack")
+            return False
+        if myself.ap >= max_ap*0.75:
+            Logs.show_log(f"standby off cause of ap {myself.ap}")
+            return False
+        unit_aggregation = self.units_aggregation(world)
+        unit_total = self.unit_total(world)
+        if unit_total > 6:
+            Logs.show_log(f"standby on cause of unit total {unit_total}")
+            return True
+        if unit_aggregation >= 4:
+            Logs.show_log(
+                f"standby on cause of unit aggregation {unit_aggregation}")
+            return True
+        Logs.show_log(f"standby off")
+        return False
+
     def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
         """
         hand, myself = self.choose_units(world)
+        if self.stand_by(world):
+            return
         if world.get_current_turn() < 10:
             self.two_by_two_mode(world)
             return
