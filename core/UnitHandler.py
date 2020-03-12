@@ -157,20 +157,20 @@ class UnitHandler:
             Logs.show_log(f"standby off cause of attack")
             self.standby = False
             return
-        if myself.ap >= max_ap:
+        if myself.ap >= max_ap*0.75:
             Logs.show_log(f"standby off cause of ap {myself.ap}")
             self.standby = False
             return
         unit_aggregation = self.units_aggregation(world)
         unit_total = self.unit_total(world)
-        if unit_total >= 6 or unit_aggregation >= 4:
+        if unit_total >= 6 and unit_aggregation >= 3:
             Logs.show_log(f"standby on")
             self.standby = True
             return
-        if unit_total < 3:
-            Logs.show_log(f"standby off")
-            self.standby = False
-            return
+        # if unit_total < 3:
+        #     Logs.show_log(f"standby off")
+        #     self.standby = False
+        #     return
 
     def put_units(self, world: World, paths_for_my_units: List[Path]):
         """
