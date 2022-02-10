@@ -1,4 +1,20 @@
-# Requirements 
+# Sharif AI Challenge 2020
+
+this is our client(SaLi team) for the 2020 sharif ai challenge.
+
+## Team Members
+
+- Sadegh Hamedani
+- Alireza Asadi
+
+## Handling
+
+- Pick (Sadegh)
+- Spell (Ali)
+- Turn (Sadegh?)
+- Unit (Sadegh)
+- Upgrade (Ali)
+
 
 ## Build
 
