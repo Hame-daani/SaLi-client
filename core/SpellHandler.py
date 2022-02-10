@@ -181,6 +181,9 @@ class SpellHandler:
             num_enemy_around_cell = 3
             grade_cell = 5
             Targets=[]
+            for uni in self.Targeted_enemy(world).units:
+                if(uni.range_level>0):
+                    return uni.cell
             if(self.unit_handler.in_danger(world) is not None and received_spell.type_id==1):
                 num_enemy_around_cell=0
                 grade_cell=0
@@ -224,9 +227,10 @@ class SpellHandler:
             Logs.show_log(f"target Allied -> spell type : {received_spell.type}")
             Targets=[]
             if(received_spell.type == SpellType.HP):
+                Logs.show_log(f"-------Ok--------")
                 if(self.unit_handler.special_unit is not None):
                     Logs.show_log(f"special unit hp :{self.unit_handler.special_unit.hp}")
-                    if(self.unit_handler.special_unit.hp<15):
+                    if(self.unit_handler.special_unit.hp<=15):
                         Logs.show_log(f"hp in my special Unit -> unit hp : {self.unit_handler.special_unit.hp}")
                         return self.unit_handler.special_unit.cell
                 # num_enemy_around_cell = 0
@@ -302,7 +306,7 @@ class SpellHandler:
         if len(my_units) > 0:
             unit = None
             for _unit in my_units:
-              if(_unit.range_level<1):
+              if(_unit.range_level==0):
                 if(self.Manhatan_Distance(BeginingCell=myself.king.center,EndingCell=_unit.cell)<=3):
                     temp_grade=_unit.hp+_unit.damage_level
                     if(temp_grade>Grade_tele and _unit.hp>0):
@@ -314,7 +318,7 @@ class SpellHandler:
             size = len(path.cells)
             cell = path.cells[int((size - 1) / 2)]
             Logs.show_log(f"target Self -> spell type : {received_spell.type}")
-            # Logs.show_log(f"unit : {unit}  unit cell : {unit.cell}  cell : {cell}")
+            #Logs.show_log(f"unit : {unit}  unit cell : {unit.cell}  cell : {cell}")
             world.cast_unit_spell(
                 unit=unit, path=path, cell=cell, spell=received_spell)
             received_spell=None

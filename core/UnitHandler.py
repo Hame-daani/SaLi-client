@@ -54,7 +54,7 @@ class UnitHandler:
         option2 = world.get_range_upgrade_number(
         ) >= 1 and world.get_damage_upgrade_number() >= 4
         option3 = world.get_range_upgrade_number() >= 3
-        return option1 or option2 or option3
+        return option2 or option3
 
     def iam_helper(self, world: World):
         units = world.get_me().units
@@ -84,7 +84,7 @@ class UnitHandler:
         """
         """
         myself = world.get_me()
-        hand = sorted(myself.hand, key=lambda u:1/u.ap)
+        hand = sorted(myself.hand, key=lambda u: 1/u.ap)
         return hand, myself
 
     def two_by_two_mode(self, world: World):
